@@ -1,0 +1,3 @@
+C:\Users\user\AppData\Local\Programs\Python\Python38
+
+아나콘다 프롬프트에서 jupyter-notebook 입력
