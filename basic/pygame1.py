@@ -1,4 +1,4 @@
-import pygame 
+import pygame
 import random
 import urllib.request
 from bs4 import BeautifulSoup
@@ -10,7 +10,7 @@ BALL_SIZE = 25
 class Ball:
     '''공을 표현하는 클래스'''
     def __init__(self):
-        #공의 중심 좌표를 임의로 지정 
+        #공의 중심 좌표를 임의로 지정
         self.x = random.randrange(BALL_SIZE, SCREEN_WIDTH - BALL_SIZE)
         self.y = random.randrange(BALL_SIZE, SCREEN_HEIGHT - BALL_SIZE)
 
@@ -20,7 +20,7 @@ class Ball:
             self.change_x = random.randint(-4, 4)
             self.change_y = random.randint(-4, 4)
 
-        #공의 색상을 지정 
+        #공의 색상을 지정
         r = random.randint(1, 255)
         g = random.randint(1, 255)
         b = random.randint(1, 255)
