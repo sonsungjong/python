@@ -1,6 +1,8 @@
 import cv2
-import mediapipe as mp          # pip install mediapipe
-
+# pip install opencv-python
+# pip install python-opencv
+import mediapipe as mp
+# pip install mediapipe
 
 class FaceDetector():
     def __init__(self, minDetectionCon= 0.5):
