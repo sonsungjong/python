@@ -21,21 +21,25 @@ print(df.info())
 # 통계값 확인
 print(df.describe())
 
-# strip()을 활용하여 공백데이터 제거 (0으로 넣어주기)
+# 공백데이터 제거 (0으로 넣어주기)
+df.loc[df['분양가격'] == '', '분양가격'] = '0'
 df.loc[df['분양가격'] == ' ', '분양가격'] = '0'
 df.loc[df['분양가격'] == '  ', '분양가격'] = '0'
 
-# null 값은 fillna로 채워준다
-df['분양가격'].fillna('0')
-
-# - 제거
-
 # null 제거 (0)
-df['분양가격'].fillna('0')
+df['분양가격'] = df['분양가격'].fillna('0')
 
+# , 콤마 제거
+df['분양가격'] = df['분양가격'].str.replace(',','0')
 
 df['분양가격'] = df['분양가격'].astype(int)
+print(df.info())
 
 # '전용면적' 문구 제거
+df['규모'] = df['규모'].str.replace('전용면적','')
 
-# print(df.value_counts())
+print(df.value_counts())
+
+# 지역명 별로 평균 분양가격을 확인하자
+result = df.groupby('지역명')['분양가격'].mean()
+print(result)
