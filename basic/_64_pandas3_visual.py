@@ -13,6 +13,20 @@ df = pd.read_csv('https://bit.ly/ds-house-price-clean')
 # df = pd.read_csv('house-price.csv', encoding='cp949')
 print(df.head())
 
-df.plot()
+df.plot()       # 선그래프를 그리다
 plt.rcParams['figure.figsize'] = (12,9)         # 크기조정이 안먹힘
 plt.show()
+
+
+'''
+plot : 일반 선그래프
+bar : 바 그래프
+barh : 수평바 그래프
+hist : 히스토그램
+kde : 커널 밀도 그래프
+hexbin : 고밀도 산점도 그래프
+box : 박스 플롯
+area : 면적 그래프
+pie : 파이 그래프
+scatter : 산점도 그래프
+'''
