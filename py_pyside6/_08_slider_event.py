@@ -7,11 +7,11 @@ def respond_to_slider(data):
 
 app = QApplication()
 slider = QSlider(Qt.Horizontal)             # 수평 슬라이더
-slider.setMinimum(1)                # 최소값
-slider.setMaximum(100)              # 최대값
-slider.setValue(25)                 # 값 셋팅
+slider.setMinimum(1)                    # 최소값
+slider.setMaximum(100)                  # 최대값
+slider.setValue(25)                     # 값 셋팅
 
-# event connect
+# 슬라이더 event connect
 slider.valueChanged.connect(respond_to_slider)          # 값변경 이벤트를 함수와 연결
 
 # run
