@@ -30,6 +30,9 @@ class MyMainWindow(QMainWindow):
         toolbar = QToolBar("My main toolbar")
         toolbar.setIconSize(QSize(16, 16))
         self.addToolBar(toolbar)
+
+        # Add the quit action to the toolbar
+        toolbar.addAction(quit_action)
         
         action1 = QAction("Some Action", self)
         action1.setStatusTip("Status message for some action")
@@ -39,7 +42,7 @@ class MyMainWindow(QMainWindow):
         action2 = QAction(QIcon("logo.png"), "Some other action", self)
         action2.setStatusTip("Status message for some other action")
         action2.triggered.connect(self.toolbar_button_click)
-        action2.setCheckable(True)
+        # action2.setCheckable(True)
         toolbar.addAction(action2)
 
         toolbar.addSeparator()
@@ -60,4 +63,3 @@ class MyMainWindow(QMainWindow):
     def quit_app(self):
         self.app.quit()
     
-# 1:35:26
