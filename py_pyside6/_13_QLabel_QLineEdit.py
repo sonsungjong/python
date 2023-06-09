@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import QWidget, QLineEdit, QHBoxLayout, QVBoxLayout, QLabel, QPushButton
-''' 2:24:00 '''
+
 class Widget(QWidget):
     def __init__(self):
         super().__init__()
@@ -52,4 +52,5 @@ class Widget(QWidget):
 
     def text_edited(self, new_text):
         print("Text edited. New text :", new_text)
+    
     
