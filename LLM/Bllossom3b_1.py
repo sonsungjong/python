@@ -42,4 +42,6 @@ outputs = model.generate(
 
 print(tokenizer.decode(outputs[0][input_ids.shape[-1]:], skip_special_tokens=True))
 
+# https://lonaru-burnout.tistory.com/16    (CUDA와 cuDNN 설치)
 # pip install transformers torch accelerate>=0.26.0
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124

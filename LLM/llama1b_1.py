@@ -17,3 +17,8 @@ outputs = pipe(
     max_new_tokens=256,
 )
 print(outputs[0]["generated_text"][-1])
+
+
+# https://lonaru-burnout.tistory.com/16    (CUDA와 cuDNN 설치)
+# pip install transformers torch accelerate>=0.26.0
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124

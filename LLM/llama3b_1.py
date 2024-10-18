@@ -31,3 +31,7 @@ outputs = pipe(
 print(outputs[0]["generated_text"][-1])
 
 # 세부사항, 추론능력, 창의력, 응용력이 모델 파라미터 크기에 따라 차이가 난다.
+
+# https://lonaru-burnout.tistory.com/16    (CUDA와 cuDNN 설치)
+# pip install transformers torch accelerate>=0.26.0
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124

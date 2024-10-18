@@ -19,7 +19,9 @@ tokenizer.pad_token = tokenizer.eos_token
 # 모델 최대 토큰 길이 확인
 print('입력 최대 길이: ',tokenizer.model_max_length)
 
-system_prompt = "Your name is '지니'. Please respond to my words in formal Korean."
+system_prompt = """
+Your name is '지니'. This system will communicate exclusively in Korean. All responses must be written in formal Korean, and no other language, including English, should be used.
+"""
 conversation_history = [
     {"role": "system", "content": f"{system_prompt}"}
 ]
@@ -75,4 +77,6 @@ while True:
     # 모델의 응답을 대화 기록에 추가
     conversation_history.append({"role":"assistant", "content":model_response})
 
+# https://lonaru-burnout.tistory.com/16    (CUDA와 cuDNN 설치)
 # pip install transformers torch accelerate>=0.26.0
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
