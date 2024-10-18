@@ -6,6 +6,8 @@ import time
 if not torch.cuda.is_available():
     raise EnvironmentError("GPU가 필요합니다. 현재 시스템에서 GPU를 사용할 수 없습니다.")
 
+# device = 'cpu'
+device = 'cuda'
 os.environ["HUGGINGFACE_HUB_TOKEN"] = "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"
 model_id = "meta-llama/Llama-3.2-1B-Instruct"
 
@@ -15,7 +17,7 @@ model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.bfloat16,
     device_map="auto",
     token=os.environ["HUGGINGFACE_HUB_TOKEN"]
-).to('cuda')  # 모델을 GPU로 이동
+).to(device)  # 모델을 GPU로 이동
 tokenizer.pad_token = tokenizer.eos_token
 
 # 모델 최대 토큰 길이 확인
@@ -48,7 +50,7 @@ while True:
         return_tensors="pt",
         padding=True,           # 패딩 추가
         truncation=True,             # 입력 길이가 너무 길면 잘라냄
-    ).to('cuda')
+    ).to(device)
 
     # 종료 토큰 정의
     terminators = [
