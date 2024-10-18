@@ -18,7 +18,7 @@ else:
     messagebox.showwarning("안내", "GPU를 사용합니다.")
 
 os.environ["HUGGINGFACE_HUB_TOKEN"] = "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"
-model_id = "meta-llama/Llama-3.2-1B-Instruct"
+model_id = "meta-llama/Llama-3.2-3B-Instruct"
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 model = AutoModelForCausalLM.from_pretrained(
