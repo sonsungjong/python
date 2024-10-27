@@ -8,9 +8,11 @@ import tkinter as tk
 from tkinter import messagebox
 from datasets import Dataset
 import pandas as pd
+from transformers import DataCollatorForSeq2Seq
 
 
-torch.cuda.empty_cache()  # 불필요한 메모리를 해제
+torch.cuda.empty_cache()
+torch.cuda.memory_summary(device=None, abbreviated=False)
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 if not torch.cuda.is_available():
@@ -23,7 +25,7 @@ else:
     messagebox.showwarning("안내", "GPU를 사용합니다.")
 
 os.environ["HUGGINGFACE_HUB_TOKEN"] = "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"
-model_id = "meta-llama/Llama-3.2-3B-Instruct"
+model_id = "meta-llama/Llama-3.2-1B-Instruct"
 
 tokenizer = AutoTokenizer.from_pretrained(model_id)
 model = AutoModelForCausalLM.from_pretrained(
@@ -38,45 +40,79 @@ tokenizer.pad_token = tokenizer.eos_token
 print('입력 최대 길이: ',tokenizer.model_max_length)
 
 # =================== 파인튜닝 ======================
-# 1. Pandas 데이터 준비
-data = {
-    "prompt": ["주인:", "주인아내:"],
-    "completion": ["동동이", "깜찍이"]
-}
-df = pd.DataFrame(data)
+# 1. 모델 경로와 파인튜닝 데이터셋 (리스트와 딕셔너리 사용)
+fine_output_dir = "./result"
+fine_tuned_data = [
+    {"prompt": "master", "completion": "Dongdong"},
+    {"prompt": "master", "completion": "Dongdong"},
+    {"prompt": "master's wife", "completion": "Bingbing"},
+    {"prompt": "master's wife", "completion": "Bingbing"},
+    {"prompt": "The master said to his wife: Is dinner ready?", "completion": "Dongdong said to Bingbing: Is dinner ready?"},
+    {"prompt": "The master's wife replied to the master: Just wait a little.", "completion": "Bingbing replied to Dongdong: Just wait a little."},
+    # Additional examples
+    {"prompt": "Who is the master?", "completion": "It's Dongdong."},
+    {"prompt": "What is the master's name?", "completion": "It's Dongdong."},
+    {"prompt": "What is the name of the master's wife?", "completion": "It's Bingbing."},
+    {"prompt": "Dongdong said to Bingbing: Is dinner ready?", "completion": "Dongdong said to Bingbing: Is dinner ready?"}
+]
 
-dataset = Dataset.from_pandas(df)
-def format_dataset(example):
-    prompt = example["prompt"]
-    completion = example["completion"]
-    input_text = f"{prompt} {completion}"
-    return {
-        "input_ids": tokenizer(input_text, truncation=True, padding='max_length', max_length=tokenizer.model_max_length, return_tensors="pt")["input_ids"].squeeze()
-    }
+# 2. 데이터셋 변환
+fine_df = pd.DataFrame(fine_tuned_data)
+fine_dataset = Dataset.from_pandas(fine_df)
 
-dataset = dataset.map(format_dataset)
+# 3. 데이터 전처리
+def fine_preprocess_function(examples):
+    inputs = examples['prompt']
+    targets = examples['completion']
+    model_inputs = tokenizer(inputs, max_length=128, truncation=True, padding='max_length')  # 패딩을 적용해 길이 맞추기
+    labels = tokenizer(targets, max_length=128, truncation=True, padding='max_length')  # 동일한 설정으로 패딩 적용
+    model_inputs["labels"] = labels["input_ids"]
+    return model_inputs
 
-# 4. 파인튜닝 인자 설정
-training_args = TrainingArguments(
-    output_dir="./results",
-    per_device_train_batch_size=1,
-    num_train_epochs=3,
-    logging_dir="./logs",
-    logging_steps=10,
-    save_steps=100,
-    save_total_limit=2,
-    learning_rate=5e-5,
-)
+fine_tokenized_dataset = fine_dataset.map(fine_preprocess_function, batched=True)
 
-# 5. Trainer 정의
-trainer = Trainer(
-    model=model,
-    args=training_args,
-    train_dataset=dataset
-)
+# 데이터 수집기 설정 (패딩을 자동으로 처리)
+data_collator = DataCollatorForSeq2Seq(tokenizer, model=model)
 
-# 6. 파인튜닝 수행
-trainer.train()
+# 4. 경로지정
+if os.path.exists(fine_output_dir) and os.listdir(fine_output_dir):
+    print('파인튜닝된 모델이 이미 존재하므로 로드합니다')
+    fine_model = AutoModelForCausalLM.from_pretrained(fine_output_dir).to(device)
+    tokenizer = AutoTokenizer.from_pretrained(fine_output_dir)
+else:
+    print('파인튜닝된 모델이 없어 새로운 모델을 생성합니다')
+    fine_training_args = TrainingArguments(
+        output_dir=fine_output_dir,
+        eval_strategy="no",
+        learning_rate=2e-5,
+        per_device_train_batch_size=4,
+        num_train_epochs=3,
+        weight_decay=0.01,
+        save_total_limit=2,
+        push_to_hub=False,
+    )
+
+    # 5. 트레이너 설정
+    fine_trainer = Trainer(
+        model=model,
+        args=fine_training_args,
+        train_dataset=fine_tokenized_dataset,
+        tokenizer=tokenizer,
+        data_collator=data_collator
+    )
+
+    # 6. 파인튜닝 실행
+    fine_trainer.train()
+
+    # 7. 파인튜닝된 모델을 저장
+    model.save_pretrained(fine_output_dir)
+    tokenizer.save_pretrained(fine_output_dir)
+    print("모델 파인튜닝 및 저장이 완료되었습니다.")
+
+    # 파인튜닝 완료 후 모델을 로드
+    fine_model = AutoModelForCausalLM.from_pretrained(fine_output_dir).to(device)
+
+print(fine_model)
 # ===== 파인튜닝 완료 =====
 
 
@@ -118,8 +154,11 @@ while True:
         tokenizer.convert_tokens_to_ids("<|eot_id|>")
     ]
 
-    # 모델을 사용해 응답 생성
-    outputs = model.generate(
+    # 8. 파인튜닝 모델을 사용해 응답 생성
+    fine_model = fine_model.to(device)
+    input_ids = input_ids.to(device)
+
+    outputs = fine_model.generate(
         input_ids,
         max_new_tokens = 1024,
         eos_token_id=terminators,
