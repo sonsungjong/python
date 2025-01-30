@@ -1,0 +1,9 @@
+modelfile.txt를 통해서 insight 모델 생성하기
+
+ollama create genie -f .\modelfile.txt
+
+
+uncensored 모델 관련
+QuantFactory/DarkIdol-Llama-3.1-8B-Instruct-1.2-Uncensored-GGUF 다운로드 후 옆에 두고
+
+ollama create uncensored_model -f .\uncensored.txt

@@ -44,8 +44,6 @@ print('입력 최대 길이: ',tokenizer.model_max_length)
 fine_output_dir = "./result"
 fine_tuned_data = [
     {"prompt": "master", "completion": "Dongdong"},
-    {"prompt": "master", "completion": "Dongdong"},
-    {"prompt": "master's wife", "completion": "Bingbing"},
     {"prompt": "master's wife", "completion": "Bingbing"},
     {"prompt": "The master said to his wife: Is dinner ready?", "completion": "Dongdong said to Bingbing: Is dinner ready?"},
     {"prompt": "The master's wife replied to the master: Just wait a little.", "completion": "Bingbing replied to Dongdong: Just wait a little."},
