@@ -26,7 +26,7 @@ if st.button("Start New Conversation"):
     # 버튼 클릭시 동작
     st.session_state.chat_history = []
     history = get_session_history(user_id)
-    history.clear()
+    history.clear()         # 버튼을 눌러 초기화를 시켜도 동일한 아이디에 대해 계속해서 데이터를 저장해놓고 싶으면 clear를 하지 않으면 된다
 
 # session_state에 쌓인 리스트를 하나씩 사용자아이콘으로 꾸민다
 for message in st.session_state.chat_history:
@@ -48,12 +48,9 @@ chain = prompt | llm | StrOutputParser()
 runnable_with_history = RunnableWithMessageHistory(chain, get_session_history, input_messages_key='input', history_messages_key='history')
 
 def chat_with_llm(session_id, input):
-    output = runnable_with_history.invoke(
-        {'input':input},
-        config={'configurable':{'session_id':session_id}}
-    )
+    for output in runnable_with_history.stream( {'input':input}, config={'configurable':{'session_id':session_id}} ):
+        yield output
 
-    return output
 
 # 입력창 생성
 prompt = st.chat_input("What is up?")
@@ -64,10 +61,9 @@ if prompt:
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    response = chat_with_llm(user_id, prompt)
     # 즉각적으로 화면에 나오게 한다
     with st.chat_message("assistant"):
-        st.markdown(response)
+        response = st.write_stream(chat_with_llm(user_id, prompt))
 
     st.session_state.chat_history.append({'role':'assistant', 'content':response})
 
