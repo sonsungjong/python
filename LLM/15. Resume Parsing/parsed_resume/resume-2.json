@@ -1,0 +1,75 @@
+{
+    "contact": {
+        "name": "Ross Thiele",
+        "email": "ross.thiele@gmail.com",
+        "phone_number": "770-286-6771/770-315-8721"
+    },
+    "education": {
+        "institution_name": "Southern Polytechnic State University",
+        "degree": "Bachelor of Mechanical Engineering Technology",
+        "field_of_study": "",
+        "graduation_dates": [
+            "December 2017"
+        ]
+    },
+    "experience": [
+        {
+            "job_title": "Photographer and Warehouse Assistant",
+            "company_name": "Pure Red Creative",
+            "location": "Tucker GA",
+            "dates_of_employment": "Summer 2013-Present",
+            "responsibilities/projects": [
+                "Organized merchandise from numerous clients preparing them to be shot in photo studio",
+                "Unloaded trucks and placed boxes in storage",
+                "Shipped merchandise using shipping companies such as FedEx and Ups",
+                "Built and put together sets for photo shoots",
+                "Responsible for correct lighting during shootings"
+            ]
+        },
+        {
+            "job_title": "Loader and Greenhouse Worker",
+            "company_name": "Pike Nursery",
+            "location": "Johns Creek, GA",
+            "dates_of_employment": "Spring 2013",
+            "responsibilities/projects": [
+                "Loaded vehicles with products",
+                "Organized greenhouse daily as well as taking care of all the vegetation"
+            ]
+        },
+        {
+            "job_title": "Assistant Manager",
+            "company_name": "Menchies Frozen Yogurt",
+            "location": "Johns Creek, GA",
+            "dates_of_employment": "Summers 1988-89",
+            "responsibilities/projects": [
+                "Prepared frozen yogurt machines for daily operation",
+                "Prepared fresh toppings on a daily basis (cut fruit, other toppings, etc.)"
+            ]
+        },
+        {
+            "job_title": "Eagle Scout",
+            "company_name": "",
+            "location": "",
+            "dates_of_employment": "",
+            "responsibilities/projects": [
+                "Eagle Scout"
+            ]
+        }
+    ],
+    "projects": [
+        {
+            "project_title": "Photo Studio Setup and Logistics",
+            "description": "Organized merchandise from numerous clients preparing them to be shot in photo studio",
+            "technologies_used": "Operating Systems: Windows, Mac OSX"
+        },
+        {
+            "project_title": "Greenhouse Management System",
+            "description": "Loaded vehicles with products and organized greenhouse daily as well as taking care of all the vegetation",
+            "technologies_used": "Operating Systems: Windows, Mac OSX"
+        }
+    ],
+    "skills": [
+        "Programming Languages",
+        "Technologies/Tools"
+    ]
+}

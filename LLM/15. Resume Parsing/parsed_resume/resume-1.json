@@ -1,0 +1,58 @@
+{
+    "Contact Information": {
+        "Name": "Kumar Pallav",
+        "Email": "me@kumarpallav.com",
+        "Phone Number": "+1-206-910-0006",
+        "Website/Portfolio": "http://kumarpallav.com"
+    },
+    "Education": {
+        " Institution Name": "Indian Institute of Technology, Bombay",
+        "Degree": "Bachelor of Computer Science and Engineering (with Hons.)",
+        "Field of Study": null,
+        "Graduation Dates": [
+            "Jun 2010",
+            "May 2014"
+        ]
+    },
+    "Experience": {
+        "Job Title": "Software Engineer",
+        "Company Name": "Microsoft",
+        "Location": "Redmond, WA, Vancouver, Canada",
+        "Dates of Employment": [
+            {
+                "Start Date": "Jun 2016",
+                "End Date": "Present"
+            },
+            {
+                "Start Date": "Nov 2014",
+                "End Date": "May 2016"
+            }
+        ]
+    },
+    "Projects": {
+        "Project Title": "Course Allotment Simulation using SAT Solver",
+        "Description/Technologies Used": "SAT (Satis\ufb01ability) problem, heuristics on MiniSAT and Glucose solvers",
+        "Outcomes/Results": [
+            {
+                "Best Course Allocation": "Under various constraints as a SAT problem"
+            },
+            {
+                "Relative E\ufb03ciency of Heuristics": "Studied the relative ef\ufb03ciency of various heuristics"
+            }
+        ]
+    },
+    "Skills": {
+        "Programming Languages": [
+            "C++",
+            "CSharp",
+            "JavaScript",
+            "Java",
+            "C"
+        ],
+        "Technologies/Tools": [
+            "NodeJs",
+            "UWP",
+            "Win32"
+        ]
+    }
+}
