@@ -8,7 +8,8 @@ from langchain_community.chat_message_histories import SQLChatMessageHistory
 from langchain_core.output_parsers import StrOutputParser
 
 base_url = "http://localhost:11434"
-model = "llama3.2:1b"
+# model = "llama3.2:1b"
+model = "gemma3:4b"
 # user_id = "Sungjong Son"
 
 st.title("Make Your Own Chatbot")
