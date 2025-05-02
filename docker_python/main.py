@@ -1,12 +1,12 @@
 # pip install -r requirements.txt
+# uvicorn main:app --port 8000 --host 0.0.0.0
+# uvicorn main:app --reload --port 8000 --host 127.0.0.1
 
 from typing import Union
 # pip install fastapi
 # pip install uvicorn
 from fastapi import FastAPI
 
-# uvicorn main:app --port 8000 --host 0.0.0.0
-# uvicorn main:app --reload --port 8000 --host 127.0.0.1
 app = FastAPI()
 
 # localhost:8000
