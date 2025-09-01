@@ -5,7 +5,7 @@ import unicodedata, difflib
 
 # ---- 고정 설정 ----
 MODEL = "qwen2.5vl:7b"             # Modelfile 쓰면 "qwen-ocr"
-FOLDER_PATH = r"C:\line_none"    # 이미지 폴더 경로
+FOLDER_PATH = r"C:\line"    # 이미지 폴더 경로
 URL = "http://127.0.0.1:11434/api/generate"
 IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".bmp", ".webp", ".tif", ".tiff")
 
@@ -16,7 +16,7 @@ MAX_SECONDS = 180
 
 # 반복 토큰 가드
 REPEAT_WINDOW_CHARS = 800
-REPEAT_TOKEN_MINLEN = 5
+REPEAT_TOKEN_MINLEN = 2             # 글자수
 REPEAT_TOKEN_LIMIT  = 25
 
 PROMPT = (
