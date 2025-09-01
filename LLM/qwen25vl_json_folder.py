@@ -5,7 +5,7 @@ import unicodedata, difflib
 
 # ---- 고정 설정 ----
 MODEL = "qwen2.5vl:7b"             # Modelfile 쓰면 "qwen-ocr"
-FOLDER_PATH = r"C:\line"    # 이미지 폴더 경로
+FOLDER_PATH = r"C:\line_none"    # 이미지 폴더 경로
 URL = "http://127.0.0.1:11434/api/generate"
 IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".bmp", ".webp", ".tif", ".tiff")
 
@@ -16,7 +16,7 @@ MAX_SECONDS = 180
 
 # 반복 토큰 가드
 REPEAT_WINDOW_CHARS = 800
-REPEAT_TOKEN_MINLEN = 2
+REPEAT_TOKEN_MINLEN = 5
 REPEAT_TOKEN_LIMIT  = 25
 
 PROMPT = (
@@ -269,8 +269,11 @@ def save_json(result: dict, img_file: str) -> Path:
     # 스크립트(.py) 옆에 <이미지이름>.ocr.json 로 저장/append
     script_dir = Path(__file__).resolve().parent
     base = Path(img_file).stem
-    # out_path = script_dir / f"{base}.ocr.json"            # 각자 파일로 저장
-    out_path = script_dir / f"qwen.ocr.json"              # 하나의 파일에 저장
+    out_path = script_dir / f"output/{base}.ocr.json"            # 각자 파일로 저장
+    # out_path = script_dir / f"qwen.ocr.json"              # 하나의 파일에 저장
+
+    # 폴더 없으면 생성
+    out_path.parent.mkdir(parents=True, exist_ok=True)
 
     if out_path.exists():
         with open(out_path, "r", encoding="utf-8") as f:
