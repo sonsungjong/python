@@ -10,8 +10,8 @@ URL = "http://127.0.0.1:11434/api/generate"
 IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".bmp", ".webp", ".tif", ".tiff")
 
 # 출력 한계 가드
-MAX_CHARS  = 12000
-MAX_LINES  = 300
+MAX_CHARS  = 48000
+MAX_LINES  = 1000
 MAX_SECONDS = 180
 
 # 반복 토큰 가드
@@ -23,7 +23,6 @@ PROMPT = (
     "이 이미지는 영수증/증빙 문서입니다.\n"
     "출력 규칙:\n"
     "- 줄 단위 텍스트만 추출\n"
-    "- 동일 문구 1회 이상 반복 금지\n"
     "- 표/워터마크/로고/배경문구는 무시\n"
     "- 반드시 JSON 한 번만 출력\n"
     "- 출력 끝에 <eot> 추가\n"
@@ -102,6 +101,11 @@ def stream_ocr(img_file) -> str:
         "prompt": PROMPT,
         "images": [b64(img_file)],
         "stream": True,
+        "options": {
+            "temperature": 0,
+            "num_ctx": 8192,
+            "stop": ["<eot>"]
+        }
     }
     buf = ""
     lines_seen = 0
@@ -125,10 +129,13 @@ def stream_ocr(img_file) -> str:
                 chunk = obj["response"]
                 print(chunk, end="", flush=True)
                 buf += chunk
+                if "<eot>" in buf.lower():
+                    print("\n---- 강제 중단(eot) ----")
+                    break
 
                 hit, reason = detect_semantic_loop(buf)
                 if hit:
-                    end_reason = f"유사 문구 반복 감지: {reason}"
+                    end_reason = f"\n---- 강제 중단 (유사 문구 반복 감지: {reason}) ----"
                     print(end_reason)
                     break
 
@@ -167,10 +174,6 @@ def stream_ocr(img_file) -> str:
                     print("\n---- 강제 중단(같은 토큰 200회 연속) ----")
                     break
 
-                if "<eot>" in buf.lower():
-                    print("\n---- <eot> 감지, 스트림 종료 ----")
-                    break
-
                 lines_seen += chunk.count("\n")
                 if len(buf) >= MAX_CHARS or lines_seen >= MAX_LINES:
                     print("\n---- 강제 중단(출력 한계 초과) ----")
@@ -183,31 +186,12 @@ def stream_ocr(img_file) -> str:
             if obj.get("done"):
                 print("\n---- 스트림 정상 종료 ----")
                 break
+    i = buf.lower().rfind("<eot>")
+    if i != -1:
+        buf = buf[:i]
     return buf
 
 
-
-# def try_parse_json_block(text: str):
-#     # 코드펜스 제거 후 시도
-#     t = strip_code_fences(text)
-
-#     # {"lines":[...]} 우선
-#     m = re.search(r'\{[^{}]*"lines"\s*:\s*\[[\s\S]*?\][^{}]*\}', t)
-#     if m:
-#         try:
-#             return json.loads(m.group(0))
-#         except Exception:
-#             pass
-
-#     # 아무 JSON 객체라도 마지막부터
-#     objs = re.findall(r'\{[\s\S]*?\}', t)
-#     for obj in reversed(objs):
-#         try:
-#             return json.loads(obj)
-#         except Exception:
-#             continue
-
-#     return None
 def try_parse_json_block(text: str):
     # 코드펜스 제거
     t = strip_code_fences(text).strip()
@@ -324,6 +308,29 @@ def main():
         uniq, seen = [], set()
         for s in data.get("lines", []):
             s = str(s).strip()
+
+            # --- (1) 항목이 '{"lines":[...]}' 같은 JSON 문자열이면 언랩해서 펼침
+            if s.startswith("{") and s.endswith("}"):
+                try:
+                    inner = json.loads(s)
+                    if isinstance(inner, dict) and isinstance(inner.get("lines"), list):
+                        for t in inner["lines"]:
+                            t = str(t)
+                            # --- (2) 개행/컨트롤 제거 + 공백 정리
+                            t = re.sub(r"[\r\n\u2028\u2029\u000b\u000c]+", " ", t)
+                            t = re.sub(r"\s{2,}", " ", t).strip()
+                            if not t or t.lower() == "<eot>":
+                                continue
+                            if t not in seen:
+                                seen.add(t)
+                                uniq.append(t)
+                        continue
+                except Exception:
+                    pass
+
+            # --- 일반 항목: (2) 개행/컨트롤 제거 + 공백 정리
+            s = re.sub(r"[\r\n\u2028\u2029\u000b\u000c]+", " ", s)
+            s = re.sub(r"\s{2,}", " ", s).strip()
             if not s or s.lower() == "<eot>":
                 continue
             if s not in seen:
@@ -331,11 +338,39 @@ def main():
                 uniq.append(s)
 
         result = {"lines": uniq}
+        _blob = "".join(result["lines"])
+
+        # "lines"가 2번 이상 나오거나 내부 "{\"lines\":[" 패턴이 보이면만 실행
+        if _blob.count("lines") >= 2 or '{\\"lines\\":[' in _blob or '{"lines":[' in _blob:
+            t = _blob.replace('\\"', '"')  # \" -> "
+
+            # 1) 앞부분: 처음 나오는 {"lines":[ 까지 싹 잘라냄 (문자열 모드 그대로)
+            t = re.sub(r'.*?\{"lines"\s*:\s*\[', '', t, flags=re.S)
+
+            # 2) 뒷부분: ]} 이후는 버림
+            t = re.sub(r'\]\}.*$', '', t, flags=re.S)
+
+            # 3) 이제 t는 "값","값","값"... 형태. 따옴표 안의 값들만 뽑음.
+            parts = re.findall(r'"([^"]+)"', t)
+
+            # 4) 정리(개행/공백/중복/<eot> 제거) 후 배열 재구성
+            seen, cleaned = set(), []
+            for x in parts:
+                x = re.sub(r'[\r\n\u2028\u2029\u000b\u000c]+', ' ', x)
+                x = re.sub(r'\s{2,}', ' ', x).strip()
+                if not x or x.lower() == '<eot>':
+                    continue
+                if x not in seen:
+                    seen.add(x)
+                    cleaned.append(x)
+
+            result = {"lines": cleaned}
+        
 
         # 이미지별 JSON 저장(append)
         out_file = save_json(result, img)
         print("\n==== 최종 JSON ====")
-        print(json.dumps(result, ensure_ascii=False, indent=2))
+        print(json.dumps(result, ensure_ascii=False))
         print(f"\n✅ 저장 완료: {out_file}")
 
 if __name__ == "__main__":
