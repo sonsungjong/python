@@ -17,6 +17,10 @@ if "messages" not in st.session_state:
     # 대화 기록
     st.session_state["messages"] = []
 
+# 사이드바 생성
+with st.sidebar:
+    clear_btn = st.button("대화 초기화")        # 대화기록 초기화
+
 # 기록된 대화 출력
 def print_messages():
     for chat_message in st.session_state["messages"]:
