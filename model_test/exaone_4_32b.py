@@ -53,7 +53,7 @@ def main():
         generation_kwargs = dict(
             text_inputs=messages,
             streamer=streamer,
-            max_new_tokens=512,
+            max_new_tokens=2048,
         )
         
         thread = Thread(target=pipe, kwargs=generation_kwargs)
