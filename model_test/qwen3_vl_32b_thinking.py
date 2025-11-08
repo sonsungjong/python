@@ -10,7 +10,6 @@ from transformers import AutoModelForVision2Seq, AutoProcessor, TextIteratorStre
 MODEL_ID = "Qwen/Qwen3-VL-32B-Thinking"
 DEVICE = "cuda:0"
 
-
 def main():
     # 모델 로드 (한 번만)
     print("모델 로딩 중...")

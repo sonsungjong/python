@@ -2,11 +2,11 @@ from llama_cpp import Llama
 import sys
 
 def main():
-    model_id = "unsloth/gpt-oss-20b-GGUF"
+    model_id = "unsloth/gpt-oss-120b-GGUF"
     # Q4_K_M: 품질과 속도의 균형 (11.6GB)
     # Q8_0: 더 높은 품질 (12.1GB)
     # Q2_K: 가장 작은 크기 (11.5GB)
-    gguf_file = "gpt-oss-20b-Q4_K_M.gguf"
+    gguf_file = "gpt-oss-120b-Q4_K_M.gguf"
     
     print(f"모델 로딩 중... ({gguf_file})")
     
@@ -50,7 +50,7 @@ def main():
         # llama-cpp-python의 create_chat_completion 사용
         response = llm.create_chat_completion(
             messages=messages,
-            max_tokens=4096,
+            max_tokens=1024,
             temperature=0.1,           # 다양성 추가
             repeat_penalty=1.1,        # 반복 억제
             top_p=0.9,                 # 더 나은 샘플링

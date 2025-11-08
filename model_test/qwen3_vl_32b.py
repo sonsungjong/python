@@ -8,23 +8,14 @@ from threading import Thread
 def main():
     model_id = "Qwen/Qwen3-VL-32B-Instruct"
     
-    print("모델 로딩 중 (4bit 양자화)...")
-    
-    # 4bit 양자화 설정
-    quantization_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_compute_dtype=torch.bfloat16,
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_quant_type="nf4"
-    )
+    print("모델 로딩 중...")
     
     # Flash Attention 2 설치: pip install flash-attn --no-build-isolation
     # Flash Attention 2 사용 (권장 - 메모리 절약 및 속도 향상)
-    # 4bit 양자화 모델 로드
     try:
         model = Qwen3VLForConditionalGeneration.from_pretrained(
             model_id,
-            quantization_config=quantization_config,
+            dtype="auto",
             attn_implementation="flash_attention_2",
             device_map="auto",
         )
@@ -33,14 +24,14 @@ def main():
         # Flash Attention 없을 경우 예외처리로 기본 모드
         model = Qwen3VLForConditionalGeneration.from_pretrained(
             model_id,
-            quantization_config=quantization_config,
+            dtype="auto",
             device_map="auto"
         )
         print("⚠️  WARNING: 4bit 양자화 활성화 (Flash Attention 2 없음)")
     
     processor = AutoProcessor.from_pretrained(model_id)
     
-    print("✅ 모델 로딩 완료!\n")
+    print("모델 로딩 완료!\n")
     
     # 무한 루프로 여러 이미지 처리
     while True:

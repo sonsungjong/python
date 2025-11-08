@@ -4,11 +4,8 @@ from threading import Thread
 import sys
 
 def main():
-    model_id = "openai/gpt-oss-20b"
+    model_id = "openai/gpt-oss-120b"
     
-    print("=" * 80)
-    print("GPT-OSS-20B 대화형 모드")
-    print("=" * 80)
     print("모델 로딩 중...")
     
     # 모델 로드 (한 번만)
@@ -19,9 +16,8 @@ def main():
         device_map="auto",
     )
     
-    print("모델 로딩 완료!")
     print("=" * 80)
-    print("대화를 시작합니다. 종료하려면 /bye 를 입력하세요.")
+    print("모델 로딩 완료! 종료하려면 /bye 를 입력하세요.")
     print("=" * 80)
     
     # 대화 기록 저장 (사용자 질문과 AI 답변만)
