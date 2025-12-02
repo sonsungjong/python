@@ -15,7 +15,7 @@ def main():
         repo_id=model_id,
         filename=gguf_file,
         n_gpu_layers=-1,  # 모든 레이어를 GPU로
-        n_ctx=1024,       # 컨텍스트 길이
+        n_ctx=131072,       # 컨텍스트 길이
         verbose=False      # 로딩 정보 표시
     )
     

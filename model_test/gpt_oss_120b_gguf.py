@@ -3,10 +3,10 @@ import sys
 
 def main():
     model_id = "unsloth/gpt-oss-120b-GGUF"
-    # Q4_K_M: 품질과 속도의 균형 (11.6GB)
-    # Q8_0: 더 높은 품질 (12.1GB)
-    # Q2_K: 가장 작은 크기 (11.5GB)
-    gguf_file = "gpt-oss-120b-Q4_K_M.gguf"
+    # Q4_K_M: 품질과 속도의 균형 (약 70GB, 2개 파일)
+    # Q8_0: 최고 품질 (약 120GB, 2개 파일)
+    # Q2_K: 가장 작은 크기 (약 45GB, 2개 파일)
+    gguf_file = "Q4_K_M/gpt-oss-120b-Q4_K_M-00001-of-00002.gguf"
     
     print(f"모델 로딩 중... ({gguf_file})")
     
@@ -15,8 +15,8 @@ def main():
         repo_id=model_id,
         filename=gguf_file,
         n_gpu_layers=-1,  # 모든 레이어를 GPU로
-        n_ctx=1024,       # 컨텍스트 길이
-        verbose=False      # 로딩 정보 표시
+        n_ctx=131072,       # 컨텍스트 길이
+        verbose=True       # 로딩 정보 표시
     )
     
     print("=" * 80)
