@@ -2,6 +2,4 @@ __pycache__/
 .env
 cache/
 .venv
-*.mp3
-*.wav
-*.avi
+
