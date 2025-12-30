@@ -1,7 +1,7 @@
 # pip install -U "huggingface_hub[cli]"
-# pip install bitsandbytes accelerate
 # huggingface-cli download Qwen/Qwen3-Omni-30B-A3B-Instruct --local-dir ./Qwen3-Omni-30B-A3B-Instruct
 # pip install qwen-omni-utils -U
+# pip install bitsandbytes accelerate autoawq
 
 import soundfile as sf
 from transformers import Qwen3OmniMoeForConditionalGeneration, Qwen3OmniMoeProcessor, BitsAndBytesConfig
