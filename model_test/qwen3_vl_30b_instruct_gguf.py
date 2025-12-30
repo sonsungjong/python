@@ -1,8 +1,12 @@
+# pip install llama-cpp-python
+
 from llama_cpp import Llama
 
 llm = Llama.from_pretrained(
 	repo_id="Qwen/Qwen3-VL-30B-A3B-Instruct-GGUF",
 	filename="Qwen3VL-30B-A3B-Instruct-Q4_K_M.gguf",
+ 	n_gpu_layers=-1,
+	n_ctx=8192
 )
 
 llm.create_chat_completion(
