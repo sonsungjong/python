@@ -56,7 +56,7 @@ while True:
             cls_id = int(box.cls[0].item())
             name = results[0].names[cls_id]
 
-            # 9. 정보를 딕셔너리 형태로 묶어서 리스트에 추가
+            # 9. 정보를 딕셔너리 형태로 묶어서 리스트에 추가 (추후에는 numpy와 DMatrix로 사용)
             dic_detected_info = {
                 "name": name,
                 "conf": round(conf, 2),             # 보기 좋게 소수점 2자리로 반올림
@@ -88,7 +88,7 @@ cv2.destroyAllWindows()
 
 
 '''
-# 카메라 -> HD-SDI -> SDI to USB 3.0 Capture Card -> Jetson(Yolo) -> 이더넷(UDP/RTSP프로토콜) -> UI프로그램
+# 카메라 -> HD-SDI -> SDI to USB 3.0 Capture Card -> Jetson(Yolo->XGBoost 순차처리) -> 이더넷(UDP/RTSP프로토콜) -> UI프로그램
 # 인코딩하여 RTSP 스트리밍으로 내보내기 (UDP통신)
 
 # Jetson Orin Nano (CPU Encoding)
@@ -97,3 +97,5 @@ pipeline = "appsrc ! videoconvert ! x264enc tune=zerolatency ! rtspclientsink ..
 # Jetson Orin NX (GPU Encoding)
 pipeline = "appsrc ! videoconvert ! nvv4l2h264enc ! rtspclientsink ..."
 '''
+
+
