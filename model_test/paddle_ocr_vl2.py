@@ -8,7 +8,10 @@ python -m pip install -U "paddleocr[doc-parser]"
 리눅스 : python -m pip install https://paddle-whl.bj.bcebos.com/nightly/cu126/safetensors/safetensors-0.6.2.dev0-cp38-abi3-linux_x86_64.whl
 '''
 
-import os, time, math, tempfile
+import os
+os.environ["DISABLE_MODEL_SOURCE_CHECK"] = "True"
+
+import time, math, tempfile
 from PIL import Image
 from paddleocr import PaddleOCRVL
 
