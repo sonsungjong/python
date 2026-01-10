@@ -45,13 +45,13 @@ pipeline = PaddleOCRVL()
 
 start_time = time.time()
 
-img_path, cleanup = downscale_cap(r"C:\img\01^0001.png")
+img_path, cleanup = downscale_cap(r"./dron.png")
 try:
     output = pipeline.predict(img_path)
     for res in output:
         res.print()
         res.save_to_json(save_path=output_path)
-        res.save_to_markdown(save_path=output_path)
+        # res.save_to_markdown(save_path=output_path)
 finally:
     cleanup()  # file_save=False일 때 임시파일 삭제
 
