@@ -1,4 +1,4 @@
-# pip install python-opencv ultralytics
+# pip install python-opencv ultralytics xgboost numpy scikit-learn pandas
 import cv2
 from ultralytics import YOLO
 
