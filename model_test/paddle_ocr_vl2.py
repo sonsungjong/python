@@ -1,4 +1,4 @@
-# PaddlePaddle/PaddleOCR-VL
+# PaddlePaddle/PaddleOCR-VL (VRAM 9.35 GB 필요)
 
 '''
 python -m pip install paddlepaddle-gpu==3.2.1 -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
@@ -8,7 +8,7 @@ python -m pip install -U "paddleocr[doc-parser]"
 리눅스 : python -m pip install https://paddle-whl.bj.bcebos.com/nightly/cu126/safetensors/safetensors-0.6.2.dev0-cp38-abi3-linux_x86_64.whl
 '''
 
-import os, math, tempfile
+import os, time, math, tempfile
 from PIL import Image
 from paddleocr import PaddleOCRVL
 
@@ -40,6 +40,8 @@ def downscale_cap(in_path: str):
 
 pipeline = PaddleOCRVL()
 
+start_time = time.time()
+
 img_path, cleanup = downscale_cap(r"C:\img\01^0001.png")
 try:
     output = pipeline.predict(img_path)
@@ -49,4 +51,7 @@ try:
         res.save_to_markdown(save_path=output_path)
 finally:
     cleanup()  # file_save=False일 때 임시파일 삭제
+
+elapsed_time = time.time() - start_time
+print(f"\n처리 시간: {elapsed_time:.2f}초")         # 약 31초
 
