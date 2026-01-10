@@ -11,7 +11,7 @@ python -m pip install -U "paddleocr[doc-parser]"
 from paddleocr import PaddleOCRVL
 
 pipeline = PaddleOCRVL()
-output = pipeline.predict("https://paddle-model-ecology.bj.bcebos.com/paddlex/imgs/demo_image/paddleocr_vl_demo.png")
+output = pipeline.predict(r"C:\img\01^0001.png")
 for res in output:
     res.print()
     res.save_to_json(save_path="output")
