@@ -1,5 +1,5 @@
 # pip install uv
-# uv pip install langchain langchain-community langchain-text-splitters langchain-core langchain-ollama langchain-openai langchain-huggingface transformers sentence-transformers torch faiss-cpu pymupdf python-dotenv
+# uv pip install langchain langchain-community langchain-text-splitters langchain-core langchain-ollama langchain-openai langchain-huggingface transformers sentence-transformers faiss-cpu pymupdf python-dotenv
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyMuPDFLoader
