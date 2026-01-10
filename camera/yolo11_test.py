@@ -7,6 +7,20 @@ model = YOLO('yolo11n.pt')
 
 # 2. 카메라 설정
 cap = cv2.VideoCapture(0)
+'''
+# 하드웨어 성능이 부족해서 최신프레임만 처리해야할 때
+gst_input = (
+    "v4l2src device=/dev/video0 ! "
+    "video/x-raw, width=1920, height=1080, framerate=30/1 ! "
+    "videoconvert ! "
+    "video/x-raw, format=BGR ! "
+    "appsink drop=true max-buffers=1 sync=false"
+)
+
+# 숫자 0 대신 gst_input 사용
+cap = cv2.VideoCapture(gst_input, cv2.CAP_GSTREAMER)
+'''
+
 cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc("M", "J", "P", "G"))
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
@@ -68,3 +82,17 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
+
+
+
+
+'''
+# 카메라 -> HD-SDI -> SDI to USB 3.0 Capture Card -> Jetson(Yolo) -> 이더넷(UDP/RTSP프로토콜) -> UI프로그램
+# 인코딩하여 RTSP 스트리밍으로 내보내기 (UDP통신)
+
+# Jetson Orin Nano (CPU Encoding)
+pipeline = "appsrc ! videoconvert ! x264enc tune=zerolatency ! rtspclientsink ..."
+
+# Jetson Orin NX (GPU Encoding)
+pipeline = "appsrc ! videoconvert ! nvv4l2h264enc ! rtspclientsink ..."
+'''
