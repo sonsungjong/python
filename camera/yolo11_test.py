@@ -1,3 +1,4 @@
+# pip install python-opencv ultralytics
 import cv2
 from ultralytics import YOLO
 
