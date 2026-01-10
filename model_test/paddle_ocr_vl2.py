@@ -9,14 +9,13 @@ python -m pip install -U "paddleocr[doc-parser]"
 '''
 
 import os, math, tempfile
-from PIL import Image, ImageOps
-import paddle
+from PIL import Image
 from paddleocr import PaddleOCRVL
 
 output_path = os.path.join(os.path.dirname(__file__), "output")
 
 def downscale_cap(in_path: str):
-    file_save = False  # True: 파일 저장, False: 저장 안함 (임시 파일)
+    file_save = True                   # True: 파일 저장, False: 저장 안함 (임시 파일)
     max_pixels = 2_000_000
 
     img = Image.open(in_path).convert("RGB")
@@ -27,7 +26,8 @@ def downscale_cap(in_path: str):
         img = img.resize((max(1, int(w*scale)), max(1, int(h*scale))), Image.LANCZOS)
     
     if file_save:
-        out_path = output_path
+        os.makedirs(output_path, exist_ok=True)
+        out_path = os.path.join(output_path, os.path.basename(in_path))
         img.save(out_path, optimize=True)
         return out_path, lambda: None  # 영구 저장, cleanup 불필요
     else:
