@@ -10,12 +10,12 @@ cmake -B build -DGGML_CUDA=ON
 cmake --build build --config Release -j$(nproc)
 """
 
-# llama.cpp 서버를 통한 Qwen3-VL-30B 추론
+# llama.cpp 서버를 통한 Qwen3-VL-32B 추론
 # 서버 실행:
 '''
 ~/llama.cpp/build/bin/llama-server \
-  -m ~/.cache/huggingface/hub/models--Qwen--Qwen3-VL-30B-A3B-Thinking-GGUF/*/*/Qwen3VL-30B-A3B-Thinking-Q4_K_M.gguf \
-  --mmproj ~/.cache/huggingface/hub/models--Qwen--Qwen3-VL-30B-A3B-Thinking-GGUF/*/*/mmproj-Qwen3VL-30B-A3B-Thinking-F16.gguf \
+  -m ~/.cache/huggingface/hub/models--Qwen--Qwen3-VL-32B-Instruct-GGUF/*/*/Qwen3VL-32B-Instruct-Q4_K_M.gguf \
+  --mmproj ~/.cache/huggingface/hub/models--Qwen--Qwen3-VL-32B-Instruct-GGUF/*/*/mmproj-Qwen3VL-32B-Instruct-F16.gguf \
   -ngl 999 --port 11435 -c 32768
 '''
 # 서버 종료:
@@ -29,12 +29,12 @@ import subprocess
 import requests
 from huggingface_hub import hf_hub_download
 
-MODEL_FILENAME = "Qwen3VL-30B-A3B-Thinking-Q4_K_M.gguf"
-MMPROJ_FILENAME = "mmproj-Qwen3VL-30B-A3B-Thinking-F16.gguf"
+MODEL_FILENAME = "Qwen3VL-32B-Instruct-Q4_K_M.gguf"
+MMPROJ_FILENAME = "mmproj-Qwen3VL-32B-Instruct-F16.gguf"
 llama_server_path = os.path.expanduser("~/llama.cpp/build/bin/llama-server")
 
 SERVER_URL = "http://127.0.0.1:11435"
-REPO_ID = "Qwen/Qwen3-VL-30B-A3B-Thinking-GGUF"
+REPO_ID = "Qwen/Qwen3-VL-32B-Instruct-GGUF"
 
 # 이미지 확장자에 따른 MIME 타입 반환
 def get_image_mime_type(image_path):
