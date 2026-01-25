@@ -1,7 +1,7 @@
 # llama.cpp 서버를 통한 Qwen3-VL-30B 추론
 # 서버 실행:
 '''
-/home/user/source/llama.cpp/build/bin/llama-server \
+~/llama.cpp/build/bin/llama-server \
   -m ~/.cache/huggingface/hub/models--Qwen--Qwen3-VL-30B-A3B-Instruct-GGUF/*/*/Qwen3VL-30B-A3B-Instruct-Q4_K_M.gguf \
   --mmproj ~/.cache/huggingface/hub/models--Qwen--Qwen3-VL-30B-A3B-Instruct-GGUF/*/*/mmproj-Qwen3VL-30B-A3B-Instruct-F16.gguf \
   -ngl 999 --port 11435
@@ -17,11 +17,12 @@ import subprocess
 import requests
 from huggingface_hub import hf_hub_download
 
-SERVER_URL = "http://127.0.0.1:11435"
-REPO_ID = "Qwen/Qwen3-VL-30B-A3B-Instruct-GGUF"
 MODEL_FILENAME = "Qwen3VL-30B-A3B-Instruct-Q4_K_M.gguf"
 MMPROJ_FILENAME = "mmproj-Qwen3VL-30B-A3B-Instruct-F16.gguf"
-llama_server_path = "/home/user/source/llama.cpp/build/bin/llama-server"
+llama_server_path = os.path.expanduser("~/llama.cpp/build/bin/llama-server")
+
+SERVER_URL = "http://127.0.0.1:11435"
+REPO_ID = "Qwen/Qwen3-VL-30B-A3B-Instruct-GGUF"
 
 # 이미지 확장자에 따른 MIME 타입 반환
 def get_image_mime_type(image_path):
