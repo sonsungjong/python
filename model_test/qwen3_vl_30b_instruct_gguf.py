@@ -1,3 +1,15 @@
+# ----------------------------------------------------------------------
+"""
+llama.cpp 설치 및 빌드 가이드 (Linux + CUDA)
+1. llama.cpp 소스 다운로드
+git clone https://github.com/ggerganov/llama.cpp.git ~/llama.cpp
+cd ~/llama.cpp
+
+2. 빌드 (CUDA 지원 활성화)
+cmake -B build -DGGML_CUDA=ON
+cmake --build build --config Release -j$(nproc)
+"""
+
 # llama.cpp 서버를 통한 Qwen3-VL-30B 추론
 # 서버 실행:
 '''
