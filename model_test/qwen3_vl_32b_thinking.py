@@ -89,7 +89,7 @@ def main():
         generate_kwargs = {
             **inputs,
             "streamer": streamer,
-            "max_new_tokens": 512,
+            "max_new_tokens": 8192,
             "pad_token_id": pad_token_id,
             "eos_token_id": processor.tokenizer.eos_token_id,
         }

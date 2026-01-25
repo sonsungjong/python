@@ -16,7 +16,7 @@ cmake --build build --config Release -j$(nproc)
 ~/llama.cpp/build/bin/llama-server \
   -m ~/.cache/huggingface/hub/models--Qwen--Qwen3-VL-30B-A3B-Instruct-GGUF/*/*/Qwen3VL-30B-A3B-Instruct-Q4_K_M.gguf \
   --mmproj ~/.cache/huggingface/hub/models--Qwen--Qwen3-VL-30B-A3B-Instruct-GGUF/*/*/mmproj-Qwen3VL-30B-A3B-Instruct-F16.gguf \
-  -ngl 999 --port 11435
+  -ngl 999 --port 11435 -c 32768
 '''
 # 서버 종료:
 # Ctrl+C 또는
@@ -102,7 +102,9 @@ def check_server():
         "-m", model_path,
         "--mmproj", mmproj_path,
         "-ngl", "999",
-        "--port", "11435"
+        "--port", "11435",
+        "-c", "32768",      # 컨텍스트 길이 제한 (메모리 절약: 262k -> 32k)
+        # "-fa"               # Flash Attention 강제 활성화
     ]
     
     subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
