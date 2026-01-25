@@ -58,7 +58,7 @@ def main():
         response = llm.create_chat_completion(
             messages=messages,
             max_tokens=4096,
-            temperature=0.1,           # 다양성 추가
+            temperature=0.7,           # 다양성 추가
             repeat_penalty=1.1,        # 반복 억제
             top_p=0.9,                 # 더 나은 샘플링
             stream=True
