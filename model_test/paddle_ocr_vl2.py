@@ -45,7 +45,7 @@ pipeline = PaddleOCRVL()
 
 start_time = time.time()
 
-img_path, cleanup = downscale_cap(r"./dron.png")
+img_path, cleanup = downscale_cap(r"./ocr/삼성종합상사^0001.png")
 try:
     output = pipeline.predict(img_path)
     for res in output:
