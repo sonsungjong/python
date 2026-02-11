@@ -10,8 +10,8 @@ if __name__ == "__main__":
     # -------------------------------------------------------
     # 1. DB에 저장된 bcrypt 해시값을 여기에 붙여넣으세요
     # -------------------------------------------------------
-    # stored_hash = "$2a$10$v2LPYcsHYhV/2EtaMJSNzekXlQZI16.edbVFOffMKBOw/dQkhbGHO"
-    stored_hash = "$2a$10$ZFjQvEHCk22FHrN6SbJr5eIt3.E9tdyV6jUOKQKr5ufW1JlOKKXby"
+    stored_hash = "$2a$10$v2LPYcsHYhV/2EtaMJSNzekXlQZI16.edbVFOffMKBOw/dQkhbGHO"
+    # stored_hash = "$2a$10$ZFjQvEHCk22FHrN6SbJr5eIt3.E9tdyV6jUOKQKr5ufW1JlOKKXby"
 
     # -------------------------------------------------------
     # 2. 유저가 사용할 법한 비밀번호 후보를 넣으세요
