@@ -1,34 +1,61 @@
 import bcrypt
 
-def hash_password(password: str, rounds: int = 12) -> str:
-    """
-    주어진 비밀번호를 BCrypt 해시로 변환합니다.
-    :param password: 원본 비밀번호
-    :param rounds: 해싱 강도 (기본값: 12)
-    :return: 해싱된 비밀번호 (문자열)
-    """
-    salt = bcrypt.gensalt(rounds)  # 자동 Salt 생성
-    hashed = bcrypt.hashpw(password.encode(), salt)
-    return hashed.decode()  # 바이트 -> 문자열 변환
-
 def check_password(password: str, hashed_password: str) -> bool:
-    """
-    입력한 비밀번호가 해싱된 비밀번호와 일치하는지 검증합니다.
-    :param password: 원본 비밀번호
-    :param hashed_password: 저장된 해싱된 비밀번호
-    :return: 검증 결과 (True/False)
-    """
+    """입력한 비밀번호가 해싱된 비밀번호와 일치하는지 검증"""
     return bcrypt.checkpw(password.encode(), hashed_password.encode())
 
-# 실행
-if __name__ == "__main__":
-    # 예시 비밀번호
-    raw_password = "1234"
-    
-    # 비밀번호 암호화
-    hashed_password = hash_password(raw_password)
-    print("🔒 해싱된 비밀번호:", hashed_password)
 
-    # 비밀번호 검증
-    is_valid = check_password(raw_password, hashed_password)
-    print("✅ 비밀번호 일치 여부:", is_valid)
+if __name__ == "__main__":
+
+    # -------------------------------------------------------
+    # 1. DB에 저장된 bcrypt 해시값을 여기에 붙여넣으세요
+    # -------------------------------------------------------
+    stored_hash = "$2a$10$v2LPYcsHYhV/2EtaMJSNzekXlQZI16.edbVFOffMKBOw/dQkhbGHO"
+
+    # -------------------------------------------------------
+    # 2. 유저가 사용할 법한 비밀번호 후보를 넣으세요
+    # -------------------------------------------------------
+    candidates = [
+        "1234",
+        "eovhqud",
+        "대포병",
+        "rnrwl",
+        "h8769",
+        "1111",
+        "lyh",
+        "rnrwl1234",
+        "test1",
+        "test2",
+        "test1234",
+        "test2222",
+        "2222",
+        "test",
+        "테스트2",
+        "테스트1",
+        "fpdlek1234!",
+        "fpdlek1234"
+        "fpdlek",
+        "rnrwlqkdrhdfpdlek",
+        "rnrwlqkdrhdfpdlek1234",
+        "rnrwlqkdrhdfpdlej",
+        "rnrwlqkdrhdfpdlej1234"
+    ]
+
+    # -------------------------------------------------------
+    # 3. 비밀번호 찾기
+    # -------------------------------------------------------
+    print(f"🔍 {len(candidates)}개의 후보 비밀번호를 검사합니다...\n")
+
+    found = False
+    for pw in candidates:
+        match = check_password(pw, stored_hash)
+        result = "✅ 일치!" if match else "❌"
+        print(f"  {result}  {pw}")
+
+        if match:
+            print(f"\n🎉 비밀번호 찾았습니다: {pw}")
+            found = True
+            break
+
+    if not found:
+        print("\n❌ 일치하는 비밀번호를 찾지 못했습니다. 후보를 추가해보세요.")
