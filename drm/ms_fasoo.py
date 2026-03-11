@@ -118,5 +118,5 @@ def read_drm_ppt(file_path):
 
 
 # 테스트
-read_drm_excel(r"C:\test\secure_file.xlsx")
+read_drm_excel(r"C:\Users\sungjong.son\비행모니터링시스템\260131\견적서_항우연_국가종합비행성능시험장_에이치엘시스템_251213__모델명.xlsx")
 # read_drm_ppt(r"C:\Test\secure_presentation.pptx")
