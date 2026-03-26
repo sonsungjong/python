@@ -23,10 +23,13 @@ def read_drm_excel(file_path):
         val = ws.Range("A1").Value
         print(f"A1 셀 내용: {val}")
 
-        # 전체 데이터 읽어서 리눅스로 보낼 텍스트/JSON 만들기
-        # ... (데이터 추출 로직) ...
+        # DRM 우회 저장: .iso 확장자로 저장 → Fasoo 무시
+        # 다른 PC에서 .iso → .xlsx 로 이름 변경 후 열기
+        save_path = os.path.splitext(abs_path)[0] + ".iso"
+        wb.SaveAs(save_path, 51)  # 51 = xlOpenXMLWorkbook (.xlsx 포맷)
+        print(f"ISO 확장자로 저장 완료: {save_path}")
 
-        wb.Close(False) # 저장 안 하고 닫기
+        wb.Close(False)
 
     except Exception as e:
         print(f"에러 발생: {e}")
@@ -49,9 +52,15 @@ def read_drm_word(file_path):
         # 전체 텍스트 추출
         full_text = doc.Content.Text
         print(f"문서 내용(일부): {full_text[:100]}...")
-        
+
+        # DRM 우회 저장: .iso 확장자로 저장 → Fasoo 무시
+        # 다른 PC에서 .iso → .docx 로 이름 변경 후 열기
+        save_path = os.path.splitext(abs_path)[0] + ".iso"
+        doc.SaveAs2(save_path, 16)  # 16 = wdFormatDocumentDefault (.docx 포맷)
+        print(f"ISO 확장자로 저장 완료: {save_path}")
+
         doc.Close(False)
-        
+
     except Exception as e:
         print(f"에러: {e}")
     finally:
@@ -106,14 +115,18 @@ def read_drm_ppt(file_path):
         print(final_content[:200] + "...") # 미리보기
         print("="*30)
 
-        # 저장하지 않고 닫기
+        # DRM 우회 저장: .iso 확장자로 저장 → Fasoo 무시
+        # 다른 PC에서 .iso → .pptx 로 이름 변경 후 열기
+        save_path = os.path.splitext(abs_path)[0] + ".iso"
+        presentation.SaveAs(save_path, 24)  # 24 = ppSaveAsOpenXMLPresentation (.pptx 포맷)
+        print(f"ISO 확장자로 저장 완료: {save_path}")
+
         presentation.Close()
 
     except Exception as e:
         print(f"에러 발생: {e}")
     finally:
         if ppt_app:
-            # PPT 프로세스 종료
             ppt_app.Quit()
 
 
