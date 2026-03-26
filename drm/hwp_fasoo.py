@@ -44,11 +44,20 @@ def test_hwp_automation(file_path):
         print(f"추출된 텍스트 길이: {len(full_text)}")
         print(f"내용 미리보기: {full_text[:100]}...")
         print("-" * 30)
-        
-        # hwp.Quit() # 테스트 끝나면 종료 (주석 처리하면 창 켜진채로 유지)
+
+        # 4. DRM 우회 저장: 확장자를 .iso로 하면 Fasoo가 무시함
+        # 다른 컴퓨터에서 .iso → .hwp로 이름만 바꾸면 정상 오픈
+        save_path = os.path.splitext(abs_path)[0] + ".iso"
+        if hwp.SaveAs(save_path, "HWP"):
+            print(f"4. ISO 확장자로 저장 성공: {save_path}")
+            print("   → 다른 PC에서 확장자를 .hwp로 변경 후 열기")
+        else:
+            print("4. 저장 실패")
+
+        hwp.Quit()
 
     except Exception as e:
         print(f"에러 발생: {e}")
 
 # 테스트할 HWPX 파일 경로 입력
-test_hwp_automation(r"C:\test\fasoo_drm.hwp")
+test_hwp_automation(r"C:\test\FMS-FLM_SDD.hwp")
