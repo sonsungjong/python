@@ -25,7 +25,7 @@ messages = [
             #{"type": "image", "url": "https://raw.githubusercontent.com/google-gemma/cookbook/refs/heads/main/Demos/sample-data/GoldenGate.png"},
             #{"type": "text", "text": "What is shown in this image?"}
             {"type": "image", "image": image},
-            {"type": "text", "text": "Extract all text from this image exactly as it appears. Preserve any table structure or layout as much as possible."}
+            {"type": "text", "text": "이 견적서는 한국에서 사용되는 견적서다. 따라서 본문의 주 언어는 한국어(한글)이다. Extract all text from this image exactly as it appears. Preserve any table structure or layout as much as possible."}
         ]
     }
 ]
