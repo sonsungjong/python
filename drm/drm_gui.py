@@ -10,6 +10,8 @@ import shutil
 import tempfile
 import threading
 import openpyxl
+from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
+from openpyxl.utils import get_column_letter
 
 
 # 지원 확장자 → 처리 타입 매핑
@@ -246,40 +248,145 @@ class DrmApp:
             self._log(f"[HWP] ISO 저장 실패")
         hwp.Quit()
 
+    def _xl_color(self, color_int):
+        """Excel BGR color → AARRGGBB hex (openpyxl 형식)"""
+        try:
+            c = int(color_int)
+            if c <= 0:
+                return None
+            return f"FF{c & 0xFF:02X}{(c >> 8) & 0xFF:02X}{(c >> 16) & 0xFF:02X}"
+        except (TypeError, ValueError):
+            return None
+
+    def _xl_border_side(self, border):
+        """Excel Border → openpyxl Side"""
+        try:
+            if border.LineStyle is None or border.LineStyle == -4142:
+                return Side()
+            style_map = {1: 'hair', 2: 'thin', -4138: 'medium', 4: 'thick'}
+            style = style_map.get(border.Weight, 'thin')
+            color = self._xl_color(border.Color) or 'FF000000'
+            return Side(style=style, color=color)
+        except Exception:
+            return Side()
+
     def _save_excel_iso(self, abs_path, save_path):
         excel = None
         try:
-            self._log(f"[Excel] 엑셀 실행 중...")
+            self._log("[Excel] 엑셀 실행 중...")
             excel = win32.gencache.EnsureDispatch("Excel.Application")
             excel.Visible = True
             excel.DisplayAlerts = False
             wb = excel.Workbooks.Open(abs_path)
-            self._log(f"[Excel] 파일 열기 성공")
-            # Excel COM으로 읽고, openpyxl로 저장 (DRM 우회)
+            self._log("[Excel] 파일 열기 성공")
+
             wb_new = openpyxl.Workbook()
             wb_new.remove(wb_new.active)
-            for i in range(1, wb.Sheets.Count + 1):
-                ws = wb.Sheets(i)
+
+            for sheet_idx in range(1, wb.Sheets.Count + 1):
+                ws = wb.Sheets(sheet_idx)
                 ws_new = wb_new.create_sheet(ws.Name)
+
                 used = ws.UsedRange
                 if used is None:
                     continue
                 values = used.Value
                 if values is None:
                     continue
-                # 단일 셀인 경우
                 if not isinstance(values, tuple):
-                    ws_new.cell(row=1, column=1, value=values)
-                    continue
-                # 단일 행인 경우
-                if not isinstance(values[0], tuple):
+                    values = ((values,),)
+                elif not isinstance(values[0], tuple):
                     values = (values,)
-                for r, row in enumerate(values, 1):
-                    for c, val in enumerate(row, 1):
+
+                sr = used.Row
+                sc = used.Column
+                merged_done = set()
+
+                self._log(f"[Excel] '{ws.Name}' 시트 처리 중... ({len(values)}행)")
+
+                h_map = {-4131: 'left', -4108: 'center', -4152: 'right', -4130: 'justify'}
+                v_map = {-4160: 'top', -4108: 'center', -4107: 'bottom'}
+
+                for r, row in enumerate(values):
+                    for c, val in enumerate(row):
+                        cr = sr + r
+                        cc = sc + c
+                        dst = ws_new.cell(row=cr, column=cc)
                         if val is not None:
-                            ws_new.cell(row=r, column=c, value=val)
+                            dst.value = val
+
+                        try:
+                            src = ws.Cells(cr, cc)
+
+                            # 숫자 서식 (한국어 "G/표준" → "General" 변환)
+                            nf = str(src.NumberFormat) if src.NumberFormat else ''
+                            nf = nf.replace('G/표준', 'General')
+                            if nf:
+                                dst.number_format = nf
+
+                            # 폰트
+                            sf = src.Font
+                            dst.font = Font(
+                                name=sf.Name or None,
+                                size=sf.Size or None,
+                                bold=bool(sf.Bold) if sf.Bold is not None else False,
+                                italic=bool(sf.Italic) if sf.Italic is not None else False,
+                                color=self._xl_color(sf.Color),
+                            )
+
+                            # 배경색
+                            interior = src.Interior
+                            if interior.Pattern and interior.Pattern != -4142:
+                                fc = self._xl_color(interior.Color)
+                                if fc:
+                                    dst.fill = PatternFill('solid', fgColor=fc)
+
+                            # 정렬
+                            dst.alignment = Alignment(
+                                horizontal=h_map.get(src.HorizontalAlignment),
+                                vertical=v_map.get(src.VerticalAlignment),
+                                wrap_text=bool(src.WrapText) if src.WrapText else False,
+                            )
+
+                            # 테두리
+                            dst.border = Border(
+                                left=self._xl_border_side(src.Borders(7)),
+                                top=self._xl_border_side(src.Borders(8)),
+                                bottom=self._xl_border_side(src.Borders(9)),
+                                right=self._xl_border_side(src.Borders(10)),
+                            )
+
+                            # 병합 셀
+                            if src.MergeCells:
+                                ma = src.MergeArea.Address.replace('$', '')
+                                if ma not in merged_done:
+                                    merged_done.add(ma)
+                                    ws_new.merge_cells(ma)
+                        except Exception:
+                            pass
+
+                # 열 너비
+                for c in range(used.Columns.Count):
+                    try:
+                        cc = sc + c
+                        w = ws.Columns(cc).ColumnWidth
+                        if w:
+                            ws_new.column_dimensions[get_column_letter(cc)].width = float(w) + 1
+                    except Exception:
+                        pass
+
+                # 행 높이
+                for r in range(used.Rows.Count):
+                    try:
+                        cr = sr + r
+                        h = ws.Rows(cr).RowHeight
+                        if h:
+                            ws_new.row_dimensions[cr].height = float(h)
+                    except Exception:
+                        pass
+
             wb.Close(False)
-            self._log(f"[Excel] 데이터 읽기 완료, openpyxl로 저장 중...")
+            self._log("[Excel] openpyxl로 저장 중...")
             wb_new.save(save_path)
             self._log(f"[Excel] ISO 저장 성공: {save_path}")
         finally:
