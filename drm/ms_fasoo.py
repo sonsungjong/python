@@ -9,7 +9,7 @@ def read_drm_excel(file_path):
     try:
         # 엑셀 어플리케이션 실행 (백그라운드)
         excel = win32.gencache.EnsureDispatch("Excel.Application")
-        excel.Visible = False  # 창 안 뜨게 하기
+        excel.Visible = True        # 창 떠야함
         excel.DisplayAlerts = False # 저장할까요? 같은 팝업 무시
 
         abs_path = os.path.abspath(file_path)
@@ -42,7 +42,7 @@ def read_drm_word(file_path):
     word = None
     try:
         word = win32.gencache.EnsureDispatch("Word.Application")
-        word.Visible = False
+        word.Visible = True
         
         abs_path = os.path.abspath(file_path)
         

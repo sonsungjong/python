@@ -19,14 +19,16 @@ EXTENSION_MAP = {
     ".docx": "word",
     ".ppt": "ppt",
     ".pptx": "ppt",
+    ".txt": "txt",
 }
 
 FILETYPES = [
-    ("지원 파일", "*.hwp;*.hwpx;*.xls;*.xlsx;*.doc;*.docx;*.ppt;*.pptx"),
+    ("지원 파일", "*.hwp;*.hwpx;*.xls;*.xlsx;*.doc;*.docx;*.ppt;*.pptx;*.txt"),
     ("한글 파일", "*.hwp;*.hwpx"),
     ("엑셀 파일", "*.xls;*.xlsx"),
     ("워드 파일", "*.doc;*.docx"),
     ("파워포인트 파일", "*.ppt;*.pptx"),
+    ("텍스트 파일", "*.txt"),
     ("모든 파일", "*.*"),
 ]
 
@@ -127,6 +129,8 @@ class DrmApp:
                 self._open_word(abs_path)
             elif doc_type == "ppt":
                 self._open_ppt(abs_path)
+            elif doc_type == "txt":
+                self._open_txt(abs_path)
         except Exception as e:
             self._log(f"[에러] {e}")
         finally:
@@ -165,6 +169,13 @@ class DrmApp:
         ppt_app.Presentations.Open(abs_path, WithWindow=True)
         self._log(f"[PPT] 파일 열기 성공: {abs_path}")
 
+    def _open_txt(self, abs_path):
+        self._log(f"[TXT] 워드로 실행 중...")
+        word = win32.gencache.EnsureDispatch("Word.Application")
+        word.Visible = True
+        word.Documents.Open(abs_path)
+        self._log(f"[TXT] 파일 열기 성공: {abs_path}")
+
     # ── .iso 저장 ──────────────────────────────────────────
 
     def _on_save_iso(self):
@@ -185,6 +196,8 @@ class DrmApp:
                 self._save_word_iso(abs_path, save_path)
             elif doc_type == "ppt":
                 self._save_ppt_iso(abs_path, save_path)
+            elif doc_type == "txt":
+                self._save_txt_iso(abs_path, save_path)
         except Exception as e:
             self._log(f"[에러] {e}")
         finally:
@@ -211,7 +224,7 @@ class DrmApp:
         try:
             self._log(f"[Excel] 엑셀 실행 중...")
             excel = win32.gencache.EnsureDispatch("Excel.Application")
-            excel.Visible = False
+            excel.Visible = True
             excel.DisplayAlerts = False
             wb = excel.Workbooks.Open(abs_path)
             self._log(f"[Excel] 파일 열기 성공")
@@ -227,7 +240,7 @@ class DrmApp:
         try:
             self._log(f"[Word] 워드 실행 중...")
             word = win32.gencache.EnsureDispatch("Word.Application")
-            word.Visible = False
+            word.Visible = True
             doc = word.Documents.Open(abs_path)
             self._log(f"[Word] 파일 열기 성공")
             doc.SaveAs2(save_path, 16)  # 16 = wdFormatDocumentDefault (.docx 포맷)
@@ -251,6 +264,22 @@ class DrmApp:
         finally:
             if ppt_app:
                 ppt_app.Quit()
+
+
+    def _save_txt_iso(self, abs_path, save_path):
+        word = None
+        try:
+            self._log(f"[TXT] 워드 실행 중...")
+            word = win32.gencache.EnsureDispatch("Word.Application")
+            word.Visible = True
+            doc = word.Documents.Open(abs_path)
+            self._log(f"[TXT] 파일 열기 성공")
+            doc.SaveAs2(save_path, 2)  # 2 = wdFormatText (plain text)
+            self._log(f"[TXT] ISO 저장 성공: {save_path}")
+            doc.Close()
+        finally:
+            if word:
+                word.Quit()
 
 
 if __name__ == "__main__":
