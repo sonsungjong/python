@@ -6,6 +6,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
 import win32com.client as win32
 import os
+import shutil
+import tempfile
 import threading
 
 
@@ -336,9 +338,14 @@ class DrmApp:
             pres.PageSetup.SlideHeight = pic.Height
             pic.Left = 0
             pic.Top = 0
+            # 임시 파일로 Export 후 .iso로 이동
             ext = os.path.splitext(abs_path)[1].lower()
             fmt = "JPG" if ext in (".jpg", ".jpeg") else "PNG"
-            slide.Export(save_path, fmt)
+            tmp_ext = ".jpg" if fmt == "JPG" else ".png"
+            with tempfile.NamedTemporaryFile(suffix=tmp_ext, delete=False) as tmp:
+                tmp_path = tmp.name
+            slide.Export(tmp_path, fmt)
+            shutil.move(tmp_path, save_path)
             self._log(f"[IMG] ISO 저장 성공: {save_path}")
             pres.Saved = True
             pres.Close()
