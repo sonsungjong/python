@@ -9,6 +9,14 @@
 # ~/llama.cpp/build/bin/llama-server -m gemma-4-31B-it-Q4_K_M.gguf --mmproj mmproj-BF16.gguf
 # OpenAI API 로 호출
 # pip install -U transformers librosa accelerate
+
+# llama.cpp 업데이트 전까지 exaone 전용
+# git clone https://github.com/nuxlear/llama.cpp.git ~/llama.cpp-exaone
+# cd ~/llama.cpp-exaone
+# git pull
+# cmake -B build -DGGML_CUDA=ON
+# cmake --build build --config Release -j$(nproc)
+
 import os
 from llama_cpp import Llama
 from transformers import AutoProcessor, AutoModelForCausalLM, TextStreamer
@@ -32,9 +40,9 @@ hf_hub_download(
 """
 
 """
-~/llama.cpp/build/bin/llama-server \
-    -m EXAONE-4.5-33B-Q4_K_M.gguf \
-    -mm mmproj-EXAONE-4.5-33B-BF16.gguf \
+~/llama.cpp-exaone/build/bin/llama-server \
+    -m ~/.cache/huggingface/hub/models--LGAI-EXAONE--EXAONE-4.5-33B-GGUF/snapshots/*/EXAONE-4.5-33B-Q4_K_M.gguf \
+    -mm ~/.cache/huggingface/hub/models--LGAI-EXAONE--EXAONE-4.5-33B-GGUF/snapshots/*/mmproj-EXAONE-4.5-33B-BF16.gguf \
     -ngl 999 -cb \
     -c 262144 -n 32768 \
     -fa on -sm row \

@@ -1,50 +1,6 @@
-# google/gemma-4-31B-it
-# unsloth
-# mmproj-BF16.gguf
-# gemma-4-31B-it-Q8_0.gguf
-# gemma-4-31B-it-Q4_K_M.gguf
-# gemma-4-31B-it-Q5_K_M.gguf
-
-# llama.cpp 설치
-# git clone https://github.com/ggerganov/llama.cpp ~/llama.cpp
-# cd ~/llama.cpp
-# git pull
-# cmake -B build -DGGML_CUDA=ON
-# cmake --build build --config Release -j$(nproc)
-# llama-server 띄우기
-# OpenAI API 로 호출
-
-"""
-from huggingface_hub import hf_hub_download
-
-# Q4_K_M 양자화 모델
-hf_hub_download(
-    repo_id="unsloth/gemma-4-31B-it-GGUF",
-    filename="gemma-4-31B-it-Q4_K_M.gguf",
-)
-
-# mmproj (multimodal projector)
-hf_hub_download(
-    repo_id="unsloth/gemma-4-31B-it-GGUF",
-    filename="mmproj-BF16.gguf",
-)
-
-# Q8_0 양자화 모델
-hf_hub_download(
-    repo_id="unsloth/gemma-4-31B-it-GGUF",
-    filename="gemma-4-31B-it-Q8_0.gguf",
-)
-
-# Q5_K_M 양자화 모델
-hf_hub_download(
-    repo_id="unsloth/gemma-4-31B-it-GGUF",
-    filename="gemma-4-31B-it-Q5_K_M.gguf",
-)
-"""
-
 from transformers import AutoProcessor, AutoModelForCausalLM, TextStreamer
 
-MODEL_ID = "google/gemma-4-31B-it"
+MODEL_ID = "LGAI-EXAONE/EXAONE-4.5-33B"
 MAX_HISTORY = 1  # 기억할 대화 턴 수
 
 # 모델 로드 (최초 1회)
