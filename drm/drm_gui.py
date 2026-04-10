@@ -9,6 +9,7 @@ import os
 import shutil
 import tempfile
 import threading
+import openpyxl
 
 
 # 지원 확장자 → 처리 타입 매핑
@@ -254,9 +255,33 @@ class DrmApp:
             excel.DisplayAlerts = False
             wb = excel.Workbooks.Open(abs_path)
             self._log(f"[Excel] 파일 열기 성공")
-            wb.SaveAs(save_path, 51)  # 51 = xlOpenXMLWorkbook (.xlsx 포맷)
-            self._log(f"[Excel] ISO 저장 성공: {save_path}")
+            # Excel COM으로 읽고, openpyxl로 저장 (DRM 우회)
+            wb_new = openpyxl.Workbook()
+            wb_new.remove(wb_new.active)
+            for i in range(1, wb.Sheets.Count + 1):
+                ws = wb.Sheets(i)
+                ws_new = wb_new.create_sheet(ws.Name)
+                used = ws.UsedRange
+                if used is None:
+                    continue
+                values = used.Value
+                if values is None:
+                    continue
+                # 단일 셀인 경우
+                if not isinstance(values, tuple):
+                    ws_new.cell(row=1, column=1, value=values)
+                    continue
+                # 단일 행인 경우
+                if not isinstance(values[0], tuple):
+                    values = (values,)
+                for r, row in enumerate(values, 1):
+                    for c, val in enumerate(row, 1):
+                        if val is not None:
+                            ws_new.cell(row=r, column=c, value=val)
             wb.Close(False)
+            self._log(f"[Excel] 데이터 읽기 완료, openpyxl로 저장 중...")
+            wb_new.save(save_path)
+            self._log(f"[Excel] ISO 저장 성공: {save_path}")
         finally:
             if excel:
                 excel.Quit()
