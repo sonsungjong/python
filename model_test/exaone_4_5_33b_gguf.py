@@ -13,7 +13,9 @@
 # llama.cpp 업데이트 전까지 exaone 전용
 # git clone https://github.com/nuxlear/llama.cpp.git ~/llama.cpp-exaone
 # cd ~/llama.cpp-exaone
-# git pull
+# git fetch origin
+# git checkout add-exaone4_5
+# git pull origin add-exaone4_5
 # cmake -B build -DGGML_CUDA=ON
 # cmake --build build --config Release -j$(nproc)
 
