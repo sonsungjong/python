@@ -20,15 +20,21 @@ EXTENSION_MAP = {
     ".ppt": "ppt",
     ".pptx": "ppt",
     ".txt": "txt",
+    ".pdf": "pdf",
+    ".jpg": "image",
+    ".jpeg": "image",
+    ".png": "image",
 }
 
 FILETYPES = [
-    ("지원 파일", "*.hwp;*.hwpx;*.xls;*.xlsx;*.doc;*.docx;*.ppt;*.pptx;*.txt"),
+    ("지원 파일", "*.hwp;*.hwpx;*.xls;*.xlsx;*.doc;*.docx;*.ppt;*.pptx;*.txt;*.pdf;*.jpg;*.jpeg;*.png"),
     ("한글 파일", "*.hwp;*.hwpx"),
     ("엑셀 파일", "*.xls;*.xlsx"),
     ("워드 파일", "*.doc;*.docx"),
     ("파워포인트 파일", "*.ppt;*.pptx"),
     ("텍스트 파일", "*.txt"),
+    ("PDF 파일", "*.pdf"),
+    ("이미지 파일", "*.jpg;*.jpeg;*.png"),
     ("모든 파일", "*.*"),
 ]
 
@@ -131,6 +137,10 @@ class DrmApp:
                 self._open_ppt(abs_path)
             elif doc_type == "txt":
                 self._open_txt(abs_path)
+            elif doc_type == "pdf":
+                self._open_pdf(abs_path)
+            elif doc_type == "image":
+                self._open_image(abs_path)
         except Exception as e:
             self._log(f"[에러] {e}")
         finally:
@@ -176,6 +186,16 @@ class DrmApp:
         word.Documents.Open(abs_path)
         self._log(f"[TXT] 파일 열기 성공: {abs_path}")
 
+    def _open_pdf(self, abs_path):
+        self._log(f"[PDF] 기본 뷰어로 실행 중...")
+        os.startfile(abs_path)
+        self._log(f"[PDF] 파일 열기 성공: {abs_path}")
+
+    def _open_image(self, abs_path):
+        self._log(f"[IMG] 기본 뷰어로 실행 중...")
+        os.startfile(abs_path)
+        self._log(f"[IMG] 파일 열기 성공: {abs_path}")
+
     # ── .iso 저장 ──────────────────────────────────────────
 
     def _on_save_iso(self):
@@ -198,6 +218,10 @@ class DrmApp:
                 self._save_ppt_iso(abs_path, save_path)
             elif doc_type == "txt":
                 self._save_txt_iso(abs_path, save_path)
+            elif doc_type == "pdf":
+                self._save_pdf_iso(abs_path, save_path)
+            elif doc_type == "image":
+                self._save_image_iso(abs_path, save_path)
         except Exception as e:
             self._log(f"[에러] {e}")
         finally:
@@ -280,6 +304,47 @@ class DrmApp:
         finally:
             if word:
                 word.Quit()
+
+    def _save_pdf_iso(self, abs_path, save_path):
+        word = None
+        try:
+            self._log(f"[PDF] 워드 실행 중...")
+            word = win32.gencache.EnsureDispatch("Word.Application")
+            word.Visible = True
+            doc = word.Documents.Open(abs_path)
+            self._log(f"[PDF] 파일 열기 성공")
+            doc.ExportAsFixedFormat(save_path, 17)  # 17 = wdExportFormatPDF
+            self._log(f"[PDF] ISO 저장 성공: {save_path}")
+            doc.Close(False)
+        finally:
+            if word:
+                word.Quit()
+
+    def _save_image_iso(self, abs_path, save_path):
+        ppt_app = None
+        try:
+            self._log(f"[IMG] 파워포인트 실행 중...")
+            ppt_app = win32.gencache.EnsureDispatch("PowerPoint.Application")
+            ppt_app.Visible = True
+            pres = ppt_app.Presentations.Add()
+            slide = pres.Slides.Add(1, 12)  # 12 = ppLayoutBlank
+            pic = slide.Shapes.AddPicture(
+                abs_path, False, True, 0, 0
+            )
+            # 슬라이드 크기를 이미지에 맞춤
+            pres.PageSetup.SlideWidth = pic.Width
+            pres.PageSetup.SlideHeight = pic.Height
+            pic.Left = 0
+            pic.Top = 0
+            ext = os.path.splitext(abs_path)[1].lower()
+            fmt = "JPG" if ext in (".jpg", ".jpeg") else "PNG"
+            slide.Export(save_path, fmt)
+            self._log(f"[IMG] ISO 저장 성공: {save_path}")
+            pres.Saved = True
+            pres.Close()
+        finally:
+            if ppt_app:
+                ppt_app.Quit()
 
 
 if __name__ == "__main__":
