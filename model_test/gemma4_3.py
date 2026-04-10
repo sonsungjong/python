@@ -12,7 +12,7 @@
 # cmake --build build --config Release -j$(nproc)
 
 # llama-server 띄우기
-# ./build/bin/llama-server -m gemma-4-31B-it-Q4_K_M.gguf --mmproj mmproj-BF16.gguf
+# ~/llama.cpp/build/bin/llama-server -m gemma-4-31B-it-Q4_K_M.gguf --mmproj mmproj-BF16.gguf
 # OpenAI API 로 호출
 
 """
