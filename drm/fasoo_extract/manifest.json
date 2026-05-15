@@ -1,0 +1,15 @@
+{
+  "extraction_date": "2026-05-15T17:51:54.244093",
+  "computer_name": "DESKTOP-0AVQDSU",
+  "username": "cbmplus",
+  "files_extracted": [
+    {
+      "src": "C:\\Fasoo",
+      "dst": "C:\\Users\\cbmplus\\source\\python\\drm\\fasoo_extract\\install\\Fasoo",
+      "size": 0,
+      "label": "install_dir (dir)"
+    }
+  ],
+  "registry_keys_found": [],
+  "output_directory": "C:\\Users\\cbmplus\\source\\python\\drm\\fasoo_extract"
+}
