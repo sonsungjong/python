@@ -293,7 +293,31 @@ def search_loaded_dlls(output_dir):
         "SLClient.dll", "DRMOneClient.dll",
         "FasooLib.dll", "FasooClient.dll",
         "fdcore.dll", "fsdrm.dll",
+        # memo.md에서 발견된 DLL들 추가
+        "f_nxa.dll", "f_nxacc.dll", "f_im.dll",
+        "f_fdcrm.dll", "f_executor.dll", "f_ckm.dll",
+        "f_nxl.dll", "f_depol.dll", "f_cms.dll",
+        "f_pdm.dll", "f_logcore.dll", "f_lph.dll",
+        "f_distri.dll", "f_xltsm.dll", "f_sqlite3.dll",
+        "f_scontainer.dll", "f_fsrc.dll", "f_dso.dll",
+        "f_batenc.dll", "f_prophdr.dll", "f_md.dll",
+        "f_propfm.dll", "f_csfileinfo.dll", "f_pma.dll",
+        "f_psc.dll", "f_pmlist.dll", "f_protry.dll",
+        "f_cblogr.dll", "f_cbl.dll", "f_cm.dll",
+        "f_CAgent.dll", "f_APAgent.dll", "f_batmgr.exe",
+        "f_ioh.dll", "f_shlext.dll", "f_ShellKeeper.dll",
+        "f_uwpinject.dll", "f_xnusub.dll", "f_nx.dll",
+        "f_mim.dll", "f_xlus2.dll",
+        "fcw_crtw2.dll", "fcw_crypto2.dll", "fcw_cryptoex2.dll",
+        "fcw_fipscrypto.dll", "fcw_common.dll",
+        "fs_commsvr.dll", "fs_commcli.dll",
+        "FasooShellMenu.dll", "snf_win.dll",
     ]
+
+    # GetModuleFileNameW 함수 올바르게 설정
+    GetModuleFileNameW = ctypes.windll.kernel32.GetModuleFileNameW
+    GetModuleFileNameW.argtypes = [ctypes.wintypes.HMODULE, ctypes.wintypes.LPWSTR, ctypes.wintypes.DWORD]
+    GetModuleFileNameW.restype = ctypes.wintypes.DWORD
 
     for dll_name in dll_names:
         try:
@@ -301,7 +325,8 @@ def search_loaded_dlls(output_dir):
             log(f"  *** 로드 성공: {dll_name}")
             # DLL 경로 찾기
             buf = ctypes.create_unicode_buffer(512)
-            ctypes.windll.kernel32.GetModuleFileNameW(handle, buf, 512)
+            hmod = ctypes.wintypes.HMODULE(handle._handle)
+            GetModuleFileNameW(hmod, buf, 512)
             dll_path = buf.value
             if dll_path:
                 log(f"      경로: {dll_path}")
@@ -313,9 +338,35 @@ def search_loaded_dlls(output_dir):
             except:
                 pass
 
-            ctypes.windll.kernel32.FreeLibrary(handle)
+            ctypes.windll.kernel32.FreeLibrary(handle._handle)
         except OSError:
             pass
+
+    # 추가: Fasoo DRM 설치 폴더 전체 복사
+    log("\n[3-2] Fasoo DRM 설치 폴더 전체 복사...")
+    fasoo_dirs = [
+        r"C:\Program Files\Fasoo DRM",
+        r"C:\Program Files (x86)\Fasoo DRM",
+        r"C:\Program Files\Fasoo",
+        r"C:\Program Files (x86)\Fasoo",
+    ]
+    for fdir in fasoo_dirs:
+        if os.path.isdir(fdir):
+            log(f"  *** 전체 복사: {fdir}")
+            dst = os.path.join(output_dir, "fasoo_full", os.path.basename(fdir))
+            try:
+                if os.path.exists(dst):
+                    shutil.rmtree(dst)
+                shutil.copytree(fdir, dst)
+                # 파일 목록 출력
+                for root, dirs, files in os.walk(dst):
+                    for f in files:
+                        full = os.path.join(root, f)
+                        size = os.path.getsize(full)
+                        rel = os.path.relpath(full, dst)
+                        log(f"    {rel} ({size:,} bytes)")
+            except Exception as e:
+                log(f"  [FAIL] {fdir}: {e}")
 
 
 def list_exports(dll_path, output_dir):
