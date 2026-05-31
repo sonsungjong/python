@@ -198,6 +198,12 @@ def analyze_image(image_path, prompt="Read all the text in the image line by lin
                         }
                     }
                 ]
+# "content": [
+#   {"type": "text", "text": "각 이미지의 텍스트를 순서대로 읽어줘."},
+#   {"type": "image_url", "image_url": {"url": "data:image/png;base64,..."}},
+#   {"type": "image_url", "image_url": {"url": "data:image/png;base64,..."}},
+#   {"type": "image_url", "image_url": {"url": "data:image/png;base64,..."}}
+#             ]
             }
         ],
         "temperature": 0.1,      # OCR: 낮은 온도로 정확성 향상
