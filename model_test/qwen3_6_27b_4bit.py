@@ -20,7 +20,7 @@ cmake --build build --config Release -j$(nproc)
 ~/llama.cpp/build/bin/llama-server \
   -m ~/.cache/huggingface/hub/models--unsloth--Qwen3.6-27B-GGUF/snapshots/*/Qwen3.6-27B-Q4_K_M.gguf \
   --mmproj ~/.cache/huggingface/hub/models--unsloth--Qwen3.6-27B-GGUF/snapshots/*/mmproj-BF16.gguf \
-  -ngl 999 --port 11435 -c 32768 --reasoning off
+  -ngl 999 --port 11435 -c 65536 --reasoning off
 '''
 # 서버 종료:
 # Ctrl+C 또는
@@ -37,12 +37,16 @@ llama_server_path = os.path.expanduser("~/llama.cpp/build/bin/llama-server")
 
 SERVER_PORT = os.getenv("QWEN36_PORT", "11435")
 SERVER_URL = f"http://127.0.0.1:{SERVER_PORT}"
-SERVER_LOG = os.getenv("QWEN36_SERVER_LOG", "/tmp/qwen3_6_27b_llama_server.log")
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SERVER_LOG = os.getenv(
+    "QWEN36_SERVER_LOG",
+    os.path.join(SCRIPT_DIR, "log", "qwen3_6_27b_llama_server.log")
+)
 
 REPO_ID = os.getenv("QWEN36_REPO_ID", "unsloth/Qwen3.6-27B-GGUF")
 MODEL_FILENAME = os.getenv("QWEN36_MODEL_FILENAME", "Qwen3.6-27B-Q4_K_M.gguf")
 MMPROJ_FILENAME = os.getenv("QWEN36_MMPROJ_FILENAME", "mmproj-BF16.gguf")
-CONTEXT_SIZE = os.getenv("QWEN36_CONTEXT", "32768")
+CONTEXT_SIZE = os.getenv("QWEN36_CONTEXT", "65536")     # 32768
 N_GPU_LAYERS = os.getenv("QWEN36_NGL", "999")
 REASONING_MODE = os.getenv("QWEN36_REASONING", "off")
 
@@ -127,6 +131,7 @@ def check_server():
     
     print("실행 명령:", " ".join(cmd))
     print(f"llama-server 로그: {SERVER_LOG}")
+    os.makedirs(os.path.dirname(os.path.abspath(SERVER_LOG)), exist_ok=True)
     log_file = open(SERVER_LOG, "a", encoding="utf-8")
     log_file.write("\n\n--- qwen3.6 llama-server start ---\n")
     log_file.write(" ".join(cmd) + "\n")
