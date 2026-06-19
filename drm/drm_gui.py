@@ -5,6 +5,7 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
 import win32com.client as win32
+import win32api
 import base64
 import win32clipboard
 import os
@@ -167,6 +168,15 @@ def save_word_range_as_rtf(doc, save_path):
             data = data.encode("ansi", errors="replace")
         with open(save_path, "wb") as f:
             f.write(data)
+    finally:
+        win32clipboard.CloseClipboard()
+
+
+def set_clipboard_text(text):
+    win32clipboard.OpenClipboard()
+    try:
+        win32clipboard.EmptyClipboard()
+        win32clipboard.SetClipboardText(text, win32clipboard.CF_UNICODETEXT)
     finally:
         win32clipboard.CloseClipboard()
 
@@ -493,19 +503,12 @@ class DrmApp:
                 word.Quit()
 
     def _save_pdf_iso(self, abs_path, save_path):
-        word = None
         try:
-            self._log(f"[PDF] 워드 실행 중...")
-            word = win32.gencache.EnsureDispatch("Word.Application")
-            word.Visible = True
-            doc = word.Documents.Open(abs_path)
-            self._log(f"[PDF] 파일 열기 성공")
-            doc.ExportAsFixedFormat(save_path, 17)  # 17 = wdExportFormatPDF
-            self._log(f"[PDF] ISO 저장 성공: {save_path}")
-            doc.Close(False)
-        finally:
-            if word:
-                word.Quit()
+            self._log("[PDF] 기본 PDF 뷰어의 인쇄 창을 엽니다.")
+            self._log("[PDF] 사용자가 직접 프린터와 저장 파일명을 선택하세요.")
+            win32api.ShellExecute(0, "print", abs_path, None, None, 1)
+        except Exception as e:
+            self._log(f"[PDF] 출력 실패: {e}")
 
     def _save_image_iso(self, abs_path, save_path):
         ppt_app = None

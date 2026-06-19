@@ -3,8 +3,11 @@
 
 import win32com.client as win32
 import win32clipboard
+import win32api
 import base64
 import os
+import shutil
+import tempfile
 import time
 import zipfile
 from xml.etree import ElementTree as ET
@@ -164,6 +167,15 @@ def save_word_range_as_rtf(doc, save_path):
     finally:
         win32clipboard.CloseClipboard()
 
+
+def set_clipboard_text(text):
+    win32clipboard.OpenClipboard()
+    try:
+        win32clipboard.EmptyClipboard()
+        win32clipboard.SetClipboardText(text, win32clipboard.CF_UNICODETEXT)
+    finally:
+        win32clipboard.CloseClipboard()
+
 def read_drm_excel(file_path):
     excel = None
     wb = None
@@ -278,6 +290,15 @@ def read_drm_txt(file_path):
             word.Quit()
 
 
+def read_drm_pdf(file_path):
+    try:
+        abs_path = os.path.abspath(file_path)
+        print("기본 PDF 뷰어의 인쇄 창을 엽니다. 사용자가 직접 프린터와 저장 파일명을 선택하세요.")
+        win32api.ShellExecute(0, "print", abs_path, None, None, 1)
+    except Exception as e:
+        print(f"에러: {e}")
+
+
 def read_drm_ppt(file_path):
     ppt_app = None
     presentation = None
@@ -362,6 +383,8 @@ def main():
         read_drm_word(abs_path)
     elif ext == ".txt":
         read_drm_txt(abs_path)
+    elif ext == ".pdf":
+        read_drm_pdf(abs_path)
     elif ext in (".ppt", ".pptx"):
         read_drm_ppt(abs_path)
     else:
