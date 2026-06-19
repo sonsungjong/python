@@ -5,10 +5,170 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
 import win32com.client as win32
+import base64
+import win32clipboard
 import os
 import shutil
 import tempfile
 import threading
+import time
+import zipfile
+from xml.etree import ElementTree as ET
+
+
+PKG_NS_URI = "http://schemas.microsoft.com/office/2006/xmlPackage"
+CONTENT_TYPES_NS = "http://schemas.openxmlformats.org/package/2006/content-types"
+DEFAULT_CONTENT_TYPES = {
+    "bin": "application/vnd.openxmlformats-officedocument.obfuscatedFont",
+    "bmp": "image/bmp",
+    "emf": "image/x-emf",
+    "gif": "image/gif",
+    "jpeg": "image/jpeg",
+    "jpg": "image/jpeg",
+    "png": "image/png",
+    "rels": "application/vnd.openxmlformats-package.relationships+xml",
+    "tif": "image/tiff",
+    "tiff": "image/tiff",
+    "wdp": "image/vnd.ms-photo",
+    "wmf": "image/x-wmf",
+    "xml": "application/xml",
+}
+
+
+def xml_local_name(tag):
+    return tag.rsplit("}", 1)[-1]
+
+
+def pkg_attr(element, name):
+    return element.attrib.get(f"{{{PKG_NS_URI}}}{name}") or element.attrib.get(name)
+
+
+def first_pkg_child(element, name):
+    for child in element:
+        if xml_local_name(child.tag) == name:
+            return child
+    return None
+
+
+def save_flat_opc_as_docx(flat_opc_xml, save_path):
+    root = ET.fromstring(flat_opc_xml)
+    if os.path.exists(save_path):
+        os.remove(save_path)
+
+    xml_parts = extract_flat_opc_xml_parts(flat_opc_xml)
+    overrides = {}
+    defaults = {}
+    with zipfile.ZipFile(save_path, "w", zipfile.ZIP_DEFLATED) as docx:
+        for part in root:
+            if xml_local_name(part.tag) != "part":
+                continue
+
+            name = pkg_attr(part, "name")
+            if not name:
+                continue
+            part_name = name if name.startswith("/") else "/" + name
+            name = name.lstrip("/")
+            content_type = pkg_attr(part, "contentType")
+            if content_type:
+                ext = os.path.splitext(name)[1].lower().lstrip(".")
+                if ext in DEFAULT_CONTENT_TYPES and DEFAULT_CONTENT_TYPES[ext] == content_type:
+                    defaults[ext] = content_type
+                else:
+                    overrides[part_name] = content_type
+
+            xml_data = first_pkg_child(part, "xmlData")
+            binary_data = first_pkg_child(part, "binaryData")
+
+            if xml_data is not None:
+                payload = xml_parts.get(part_name, "").encode("utf-8")
+            elif binary_data is not None and binary_data.text:
+                encoded = "".join(binary_data.itertext()).strip()
+                payload = base64.b64decode(encoded)
+            else:
+                payload = b""
+
+            docx.writestr(name, payload)
+
+        if "[Content_Types].xml" not in docx.namelist():
+            types = ET.Element(f"{{{CONTENT_TYPES_NS}}}Types")
+            for ext, content_type in sorted({**DEFAULT_CONTENT_TYPES, **defaults}.items()):
+                default = ET.SubElement(types, f"{{{CONTENT_TYPES_NS}}}Default")
+                default.set("Extension", ext)
+                default.set("ContentType", content_type)
+            for part_name, content_type in sorted(overrides.items()):
+                override = ET.SubElement(types, f"{{{CONTENT_TYPES_NS}}}Override")
+                override.set("PartName", part_name)
+                override.set("ContentType", content_type)
+            payload = ET.tostring(types, encoding="utf-8", xml_declaration=True)
+            docx.writestr("[Content_Types].xml", payload)
+
+        required_parts = {"[Content_Types].xml", "_rels/.rels", "word/document.xml"}
+        missing = required_parts.difference(docx.namelist())
+        if missing:
+            raise RuntimeError(f"DOCX 필수 파트가 없습니다: {', '.join(sorted(missing))}")
+
+
+def extract_flat_opc_xml_parts(flat_opc_xml):
+    parts = {}
+    pos = 0
+    while True:
+        part_start = flat_opc_xml.find("<pkg:part", pos)
+        if part_start == -1:
+            break
+        header_end = flat_opc_xml.find(">", part_start)
+        part_end = flat_opc_xml.find("</pkg:part>", header_end)
+        if header_end == -1 or part_end == -1:
+            break
+
+        header = flat_opc_xml[part_start:header_end + 1]
+        name = None
+        for attr in ('pkg:name="', 'name="'):
+            attr_start = header.find(attr)
+            if attr_start != -1:
+                attr_start += len(attr)
+                attr_end = header.find('"', attr_start)
+                name = header[attr_start:attr_end]
+                break
+
+        xml_start_tag = "<pkg:xmlData>"
+        xml_end_tag = "</pkg:xmlData>"
+        xml_start = flat_opc_xml.find(xml_start_tag, header_end, part_end)
+        if name and xml_start != -1:
+            xml_start += len(xml_start_tag)
+            xml_end = flat_opc_xml.find(xml_end_tag, xml_start, part_end)
+            if xml_end != -1:
+                parts[name if name.startswith("/") else "/" + name] = flat_opc_xml[xml_start:xml_end]
+
+        pos = part_end + len("</pkg:part>")
+    return parts
+
+
+def get_document_word_open_xml(doc):
+    try:
+        return doc.WordOpenXML
+    except Exception:
+        return doc.Range().WordOpenXML
+
+
+def save_word_range_as_rtf(doc, save_path):
+    if os.path.exists(save_path):
+        os.remove(save_path)
+
+    doc.Range().Copy()
+    time.sleep(0.5)
+
+    rtf_format = win32clipboard.RegisterClipboardFormat("Rich Text Format")
+    win32clipboard.OpenClipboard()
+    try:
+        if not win32clipboard.IsClipboardFormatAvailable(rtf_format):
+            raise RuntimeError("클립보드에서 RTF 데이터를 찾지 못했습니다.")
+        data = win32clipboard.GetClipboardData(rtf_format)
+        if isinstance(data, str):
+            data = data.encode("ansi", errors="replace")
+        with open(save_path, "wb") as f:
+            f.write(data)
+    finally:
+        win32clipboard.CloseClipboard()
 
 
 # 지원 확장자 → 처리 타입 매핑
@@ -272,16 +432,25 @@ class DrmApp:
 
     def _save_word_iso(self, abs_path, save_path):
         word = None
+        doc = None
         try:
             self._log(f"[Word] 워드 실행 중...")
             word = win32.gencache.EnsureDispatch("Word.Application")
             word.Visible = True
             doc = word.Documents.Open(abs_path)
             self._log(f"[Word] 파일 열기 성공")
-            doc.SaveAs2(save_path, 16)  # 16 = wdFormatDocumentDefault (.docx 포맷)
+            if os.path.splitext(abs_path)[1].lower() == ".docx":
+                self._log(f"[Word] WordOpenXML로 DOCX 패키지 생성 중...")
+                save_flat_opc_as_docx(get_document_word_open_xml(doc), save_path)
+            else:
+                self._log(f"[Word] RTF 기반 DOC 파일 생성 중...")
+                save_word_range_as_rtf(doc, save_path)
             self._log(f"[Word] ISO 저장 성공: {save_path}")
             doc.Close(False)
+            doc = None
         finally:
+            if doc:
+                doc.Close(False)
             if word:
                 word.Quit()
 
@@ -303,16 +472,23 @@ class DrmApp:
 
     def _save_txt_iso(self, abs_path, save_path):
         word = None
+        doc = None
         try:
             self._log(f"[TXT] 워드 실행 중...")
             word = win32.gencache.EnsureDispatch("Word.Application")
             word.Visible = True
             doc = word.Documents.Open(abs_path)
             self._log(f"[TXT] 파일 열기 성공")
-            doc.SaveAs2(save_path, 2)  # 2 = wdFormatText (plain text)
+            if os.path.exists(save_path):
+                os.remove(save_path)
+            with open(save_path, "w", encoding="utf-8-sig") as f:
+                f.write(doc.Content.Text)
             self._log(f"[TXT] ISO 저장 성공: {save_path}")
             doc.Close()
+            doc = None
         finally:
+            if doc:
+                doc.Close(False)
             if word:
                 word.Quit()
 
