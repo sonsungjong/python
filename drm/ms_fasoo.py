@@ -6,6 +6,7 @@ import os
 
 def read_drm_excel(file_path):
     excel = None
+    wb = None
     try:
         # 엑셀 어플리케이션 실행 (백그라운드)
         excel = win32.gencache.EnsureDispatch("Excel.Application")
@@ -26,14 +27,19 @@ def read_drm_excel(file_path):
         # DRM 우회 저장: .iso 확장자로 저장 → Fasoo 무시
         # 다른 PC에서 .iso → .xlsx 로 이름 변경 후 열기
         save_path = os.path.splitext(abs_path)[0] + ".iso"
-        wb.SaveAs(save_path, 51)  # 51 = xlOpenXMLWorkbook (.xlsx 포맷)
-        print(f"ISO 확장자로 저장 완료: {save_path}")
 
-        wb.Close(False)
+        if os.path.exists(save_path):
+            os.remove(save_path)
+
+        print("SaveCopyAs로 복사본 저장 중...")
+        wb.SaveCopyAs(save_path)
+        print(f"ISO 확장자로 저장 완료: {save_path}")
 
     except Exception as e:
         print(f"에러 발생: {e}")
     finally:
+        if wb:
+            wb.Close(False)
         if excel:
             excel.Quit()
 
@@ -67,9 +73,6 @@ def read_drm_word(file_path):
         if word:
             word.Quit()
 
-
-import win32com.client as win32
-import os
 
 def read_drm_ppt(file_path):
     ppt_app = None
@@ -130,6 +133,34 @@ def read_drm_ppt(file_path):
             ppt_app.Quit()
 
 
-# 테스트
-read_drm_excel(r"C:\Users\sungjong.son\비행모니터링시스템\260131\견적서_항우연_국가종합비행성능시험장_에이치엘시스템_251213__모델명.xlsx")
-# read_drm_ppt(r"C:\Test\secure_presentation.pptx")
+def main():
+    file_path = input("파일 경로를 입력하세요: ").strip().strip('"').strip("'")
+    if not file_path:
+        print("파일 경로가 입력되지 않았습니다.")
+        return
+
+    abs_path = os.path.abspath(file_path)
+    if not os.path.isfile(abs_path):
+        fallback_path = os.path.abspath(os.path.basename(file_path))
+        if os.path.isfile(fallback_path):
+            print(f"입력한 경로에는 파일이 없어 현재 폴더의 같은 파일명을 사용합니다: {fallback_path}")
+            abs_path = fallback_path
+        else:
+            print(f"파일이 존재하지 않습니다: {abs_path}")
+            print("현재 폴더에 같은 이름의 파일도 없습니다.")
+            return
+
+    ext = os.path.splitext(abs_path)[1].lower()
+
+    if ext in (".xls", ".xlsx"):
+        read_drm_excel(abs_path)
+    elif ext in (".doc", ".docx"):
+        read_drm_word(abs_path)
+    elif ext in (".ppt", ".pptx"):
+        read_drm_ppt(abs_path)
+    else:
+        print(f"지원하지 않는 확장자입니다: {ext}")
+
+
+if __name__ == "__main__":
+    main()
