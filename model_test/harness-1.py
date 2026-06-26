@@ -1,41 +1,41 @@
 # pat-jj/harness-1
-# ijohn07/harness-1-Q4_K_M-GGUF
 # https://huggingface.co/pat-jj/harness-1
-# https://huggingface.co/ijohn07/harness-1-Q4_K_M-GGUF
 
 # ----------------------------------------------------------------------
 """
-llama.cpp 설치 및 빌드 가이드 (Linux + CUDA)
-1. llama.cpp 소스 다운로드
-git clone https://github.com/ggerganov/llama.cpp.git ~/llama.cpp
-cd ~/llama.cpp
+vllm 설치 및 빌드 가이드
 
-2. 빌드 (CUDA 지원 활성화)
-cmake -B build -DGGML_CUDA=ON
-cmake --build build --config Release -j$(nproc)
 """
-
-# 압축 및 해제
-# tar -czvf llama.cpp.tar.gz llama.cpp/
-# tar -xzvf llama.cpp.tar.gz
 
 # 모델 다운로드:
 '''
-hf download ijohn07/harness-1-Q4_K_M-GGUF harness-1-q4_k_m.gguf
+hf download pat-jj/harness-1
 '''
-# 서버 실행:
+# vllm 서버 실행:
 '''
-~/llama.cpp/build/bin/llama-server \
-  -m ~/.cache/huggingface/hub/models--ijohn07--harness-1-Q4_K_M-GGUF/snapshots/*/harness-1-q4_k_m.gguf \
-  -ngl 999 \
-  -fa on \
-  --parallel 3 \
-  --cache-type-k q8_0 --cache-type-v q8_0 \
-  -c 65536 \
-  --port 11435
+vllm-openai \
+  --model ~/.cache/huggingface/hub/models--pat-jj--harness-1/snapshots/*/harness-1 \
+
 '''
 # 서버 종료:
 # Ctrl+C 또는
 # pkill -f llama-server
 # 또는 PID로 종료: kill $(pgrep -f llama-server)
 
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+tokenizer = AutoTokenizer.from_pretrained("pat-jj/harness-1")
+model = AutoModelForCausalLM.from_pretrained("pat-jj/harness-1")
+messages = [
+    {"role": "user", "content": "넌 누구냐?"},
+]
+inputs = tokenizer.apply_chat_template(
+	messages,
+	add_generation_prompt=True,
+	tokenize=True,
+	return_dict=True,
+	return_tensors="pt",
+).to(model.device)
+
+outputs = model.generate(**inputs, max_new_tokens=4096)
+print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1]:]))
