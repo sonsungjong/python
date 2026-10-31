@@ -1,0 +1,24 @@
+os: linux
+dist: noble
+language: python
+
+python:
+  - "3.10"
+  - "3.11"
+  - "3.12"
+  - "3.13"
+  - "3.14"
+
+cache:
+  - pip
+
+install:
+  - pip install pipenv
+  - pipenv sync --dev --system
+  - pip install --no-build-isolation --no-deps -e .
+
+script:
+  - tox
+
+after_success:
+  - codecov
