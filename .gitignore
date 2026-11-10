@@ -3,3 +3,7 @@ __pycache__/
 cache/
 .venv
 
+# Optional model benchmark output (--save)
+/model_test/k_exaone_25_benchmark_results/
+/model_test/llm_comparison_results/
+
